@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/OMS-5D-Tech/Web.config
+/OMS-5D-Tech/Web.Debug.config
+/OMS-5D-Tech/Web.Release.config

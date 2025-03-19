@@ -31,12 +31,12 @@ namespace OMS_5D_Tech.Models
 
         public DateTime? updated_at { get; set; }
 
-        public bool? is_active { get; set; }
+        public bool? is_active { get; set; } = false;
 
-        public bool? is_verified { get; set; }
+        public bool? is_verified { get; set; } = false;
 
         [StringLength(50)]
-        public string role { get; set; }
+        public string role { get; set; } = "user";
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbl_Users> tbl_Users { get; set; }

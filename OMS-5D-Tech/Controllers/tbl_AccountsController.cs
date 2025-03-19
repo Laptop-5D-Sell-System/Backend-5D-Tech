@@ -23,9 +23,7 @@ namespace OMS_5D_Tech.Controllers
         {
             try
             {
-                // Chek email exists or not
-                var check = await db.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == acc.email); // Sử dụng lambda function trả về first value or null
-                if (check != null)
+                var check = await db.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == acc.email); 
                 {
                     return Json(new
                     {
@@ -69,7 +67,7 @@ namespace OMS_5D_Tech.Controllers
         [Route("account/find")]
         public ActionResult FindAccountByID(int id)
         {
-                var check = db.tbl_Accounts.FirstOrDefault(x => x.id == id);
+            var check = db.tbl_Accounts.FirstOrDefault(x => x.id == id);
             try
             {
                 if (check != null)
@@ -100,11 +98,11 @@ namespace OMS_5D_Tech.Controllers
         // Update Account
         [HttpPost]
         [Route("account/update")]
-        public async Task<ActionResult> UpdateAccount(int id, tbl_Accounts acc)
+        public async Task<ActionResult> UpdateAccount(tbl_Accounts acc)
         {
             try
             {
-                var check = db.tbl_Accounts.FirstOrDefault(_ => _.id == id);
+                var check = db.tbl_Accounts.FirstOrDefault(_ => _.id == acc.id);
                 if(check != null)
                 {
                     var checkEmail = db.tbl_Accounts.FirstOrDefault(_ => _.email == acc.email);
@@ -178,99 +176,6 @@ namespace OMS_5D_Tech.Controllers
                     mess = "Có lỗi xảy ra: " + ex.Message
                 }, JsonRequestBehavior.AllowGet);
             }
-        }
-
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            tbl_Accounts tbl_Accounts = db.tbl_Accounts.Find(id);
-            if (tbl_Accounts == null)
-            {
-                return HttpNotFound();
-            }
-            return View(tbl_Accounts);
-        }
-
-        // GET: tbl_Accounts/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: tbl_Accounts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "id,email,password_hash,refresh_token,created_at,updated_at,is_active,is_verified,role")] tbl_Accounts tbl_Accounts)
-        {
-            if (ModelState.IsValid)
-            {
-                db.tbl_Accounts.Add(tbl_Accounts);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(tbl_Accounts);
-        }
-
-        // GET: tbl_Accounts/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            tbl_Accounts tbl_Accounts = db.tbl_Accounts.Find(id);
-            if (tbl_Accounts == null)
-            {
-                return HttpNotFound();
-            }
-            return View(tbl_Accounts);
-        }
-
-        // POST: tbl_Accounts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "id,email,password_hash,refresh_token,created_at,updated_at,is_active,is_verified,role")] tbl_Accounts tbl_Accounts)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(tbl_Accounts).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(tbl_Accounts);
-        }
-
-        // GET: tbl_Accounts/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            tbl_Accounts tbl_Accounts = db.tbl_Accounts.Find(id);
-            if (tbl_Accounts == null)
-            {
-                return HttpNotFound();
-            }
-            return View(tbl_Accounts);
-        }
-
-        // POST: tbl_Accounts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            tbl_Accounts tbl_Accounts = db.tbl_Accounts.Find(id);
-            db.tbl_Accounts.Remove(tbl_Accounts);
-            db.SaveChanges();
-            return RedirectToAction("Index");
         }
 
         protected override void Dispose(bool disposing)

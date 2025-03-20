@@ -24,7 +24,7 @@ namespace OMS_5D_Tech.Controllers
             try
             {
                 var check = await db.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == acc.email); 
-                {
+                if(check != null){
                     return Json(new
                     {
                         httpStatus = 400,

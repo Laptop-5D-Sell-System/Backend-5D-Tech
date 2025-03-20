@@ -24,6 +24,7 @@ namespace OMS_5D_Tech.Controllers
             try
             {
                 var check = await db.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == acc.email); 
+                if (check != null) 
                 {
                     return Json(new
                     {
@@ -31,13 +32,13 @@ namespace OMS_5D_Tech.Controllers
                         mess = "Email này đã được sử dụng !"
                     });
                 }
-
+                
                 if (string.IsNullOrWhiteSpace(acc.password_hash))
                 {
                     return Json(new
                     {
                         httpStatus = 400,
-                        mess = "Mật khẩu không được để trống !"
+                        mess = "Mật khẩu không được để trống !" + acc.password_hash + " nè"
                     });
                 }
                 // Sử dụng thư viện để mã hóa mật khẩu

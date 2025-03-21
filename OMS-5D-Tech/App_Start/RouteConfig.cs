@@ -17,7 +17,7 @@ namespace OMS_5D_Tech
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "tbl_Accounts", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "Default", action = "Index", id = UrlParameter.Optional }
             );
         }
     }

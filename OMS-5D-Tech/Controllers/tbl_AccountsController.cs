@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Threading.Tasks;
 using System.Web.Mvc;
-using BCrypt.Net;
 using OMS_5D_Tech.Models;
 
 namespace OMS_5D_Tech.Controllers
 {
+    [RoutePrefix("auth")] // Đặt root cho api
     public class tbl_AccountsController : Controller
     {
         private readonly IAccountService _accountService;
@@ -20,14 +13,9 @@ namespace OMS_5D_Tech.Controllers
         {
             _accountService = accountService;
         }
-        [HttpGet]
-        public ActionResult Index()
-        {
-            return Content("API 5D-Tech is running");
-        }
 
         [HttpPost]
-        [Route("auth/register")]
+        [Route("register")]
         public async Task<ActionResult> Register(tbl_Accounts acc)
         {
             var result = await _accountService.RegisterAsync(acc);
@@ -35,7 +23,15 @@ namespace OMS_5D_Tech.Controllers
         }
 
         [HttpPost]
-        [Route("auth/login")]
+        [Route("signin-google")]
+        public async Task<ActionResult> GoogleLogin(string idToken)
+        {
+            var result = await _accountService.RegisterWithGoogleAsync(idToken);
+            return Json(result);
+        }
+
+        [HttpPost]
+        [Route("login")]
         public async Task<ActionResult> Login(string email, string password)
         {
             var result = await _accountService.LoginAsync(email, password);
@@ -43,7 +39,7 @@ namespace OMS_5D_Tech.Controllers
         }
 
         [HttpGet]
-        [Route("auth/detail")]
+        [Route("detail/{id:int}")]
         public async Task<ActionResult> FindAccountByID(int id)
         {
             var result = await _accountService.FindAccountByIdAsync(id);
@@ -51,19 +47,19 @@ namespace OMS_5D_Tech.Controllers
         }
 
         [HttpPost]
-        [Route("auth/update")]
+        [Route("change-password")]
         public async Task<ActionResult> UpdateAccount(tbl_Accounts acc)
         {
             var result = await _accountService.UpdateAccountAsync(acc);
-            return Json(result, JsonRequestBehavior.AllowGet);
+            return Json(result);
         }
 
         [HttpDelete]
-        [Route("auth/delete")]
+        [Route("delete/{id:int}")]
         public async Task<ActionResult> DeleteAccount(int id)
         {
             var result = await _accountService.DeleteAccountAsync(id);
-            return Json(result, JsonRequestBehavior.AllowGet);
+            return Json(result);
         }
     }
 }

@@ -8,4 +8,5 @@ public interface IAccountService
     Task<object> UpdateAccountAsync(tbl_Accounts acc);
     Task<object> DeleteAccountAsync(int id);
     Task<object> LoginAsync(string email , string password);
+    Task<object> RegisterWithGoogleAsync(string idToken);
 }

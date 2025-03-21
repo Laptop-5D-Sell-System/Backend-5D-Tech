@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Data.Entity;
+using System.EnterpriseServices.CompensatingResourceManager;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Security.Policy;
+using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 using BCrypt.Net;
 using Google.Apis.Auth;
 using OMS_5D_Tech.Models;
+using OMS_5D_Tech.Services;
+using OMS_5D_Tech.Templates;
 
 public class AccountService : IAccountService
 {
     private readonly DBContext _dbContext;
     private readonly JwtService _jwtService;
+    private readonly EmailTitle _emailTitle;
 
     public AccountService(DBContext dbContext)
     {
@@ -35,12 +44,19 @@ public class AccountService : IAccountService
 
             acc.password_hash = BCrypt.Net.BCrypt.HashPassword(acc.password_hash);
             var refreshToken = _jwtService.GenerateRefreshToken();
-
+           
             acc.refresh_token = refreshToken;
             acc.refresh_token_expiry = DateTime.UtcNow.AddDays(7);
             acc.created_at = DateTime.Now;
+            acc.is_active = true;
             _dbContext.tbl_Accounts.Add(acc);
             await _dbContext.SaveChangesAsync();
+
+            // Gửi email xác thực
+            var emailService = new EmailService();
+            var emailTitle = new EmailTitle();
+            emailService.SendEmail(acc.email, "Xác thực đăng ký", emailTitle.SendVerifyEmail(acc.email));
+
 
             // Tạo token ngay sau khi đăng ký thành công
             var token = _jwtService.GenerateToken(acc.email, acc.id);
@@ -176,6 +192,76 @@ public class AccountService : IAccountService
         catch (Exception ex)
         {
             return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
+        }
+    }
+    // Chuyển sang helper
+    public string GenerateRandomPassword(int length = 10)
+    {
+        const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()";
+        StringBuilder password = new StringBuilder();
+        byte[] randomBytes = new byte[length];
+
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+
+        foreach (byte b in randomBytes)
+        {
+            password.Append(validChars[b % validChars.Length]);
+        }
+
+        return password.ToString();
+    }
+
+    public async Task<object> ResetPasswordAsync(string email)
+    {
+        try
+        {
+            var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == email);
+            var accountId = account.id;
+            var user = await _dbContext.tbl_Users.FirstOrDefaultAsync(_ => _.account_id == accountId);
+            if (account == null)
+            {
+                return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy người dùng" };
+            }
+            else
+            {
+                string newPassword = GenerateRandomPassword();
+                account.password_hash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                account.updated_at = DateTime.Now;
+                await _dbContext.SaveChangesAsync();
+                var fullnamme = user.first_name + " " + user.last_name;
+                var emailService = new EmailService();
+                emailService.SendEmail(email, "Lấy lại mật khẩu", _emailTitle.SendNewPassword(fullnamme, newPassword));
+                return new { httpStatus = HttpStatusCode.OK, mess = "Lấy lại mật khẩu thành công , vui lòng kiểm tra hòm thư của bạn !"};
+
+            }
+        }
+        catch (Exception ex)
+        {
+            return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra" + ex.Message };
+        }
+    }
+
+    public async Task<object> VerifyEmailAsync(string email)
+    {
+        try
+        {
+            var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == email);
+            if (account == null)
+            {
+                return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy người dùng" };
+            }
+            else
+            {
+                account.is_verified = true;
+                await _dbContext.SaveChangesAsync();
+                return new { httpStatus = HttpStatusCode.OK, mess = "Xác thực email thành công" };
+            }
+        } catch (Exception ex)
+        {
+            return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra" + ex.Message };
         }
     }
 }

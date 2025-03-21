@@ -27,7 +27,7 @@ namespace OMS_5D_Tech.Services
             try
             {
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Showroom Car", senderEmail));
+                message.From.Add(new MailboxAddress("5D Tech Laptop Shop", senderEmail));
                 message.To.Add(new MailboxAddress("", toEmail));
                 message.Subject = subject;
 

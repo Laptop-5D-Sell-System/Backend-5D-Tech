@@ -38,6 +38,8 @@ namespace OMS_5D_Tech.Models
         [StringLength(50)]
         public string role { get; set; } = "user";
 
+        public DateTime? refresh_token_expiry { get; set; }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbl_Users> tbl_Users { get; set; }
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using BCrypt.Net;
+using Google.Apis.Auth;
 using OMS_5D_Tech.Models;
 
 public class AccountService : IAccountService
@@ -51,6 +52,55 @@ public class AccountService : IAccountService
             return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Xảy ra lỗi khi đăng ký: " + ex.Message };
         }
     }
+
+    public async Task<object> RegisterWithGoogleAsync(string idToken)
+    {
+        try
+        {
+            var googlePayload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+            if (googlePayload == null)
+            {
+                return new { httpStatus = HttpStatusCode.BadRequest, mess = "Token Google không hợp lệ!" };
+            }
+
+            var email = googlePayload.Email;
+
+            var user = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(x => x.email == email);
+            if (user == null)
+            {
+                user = new tbl_Accounts
+                {
+                    email = email,
+                    password_hash = null,
+                    is_verified = true,
+                    is_active = true,
+                    created_at = DateTime.Now
+                };
+                _dbContext.tbl_Accounts.Add(user);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            var accessToken = _jwtService.GenerateToken(user.email, user.id);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            user.refresh_token = refreshToken;
+            user.updated_at = DateTime.Now;
+            await _dbContext.SaveChangesAsync();
+
+            return new
+            {
+                httpStatus = HttpStatusCode.Created,
+                mess = "Đăng nhập thành công!",
+                accessToken,
+                refreshToken
+            };
+        }
+        catch (Exception ex)
+        {
+            return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi khi đăng nhập bằng Google: " + ex.Message };
+        }
+    }
+
 
     public async Task<object> LoginAsync(string email, string password)
     {

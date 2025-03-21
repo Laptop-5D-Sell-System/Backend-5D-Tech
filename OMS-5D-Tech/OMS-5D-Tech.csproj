@@ -65,6 +65,9 @@
     <Reference Include="Google.Apis.Core, Version=1.69.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Apis.Core.1.69.0\lib\net462\Google.Apis.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Google.Apis.Drive.v3, Version=1.69.0.3703, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Drive.v3.1.69.0.3703\lib\net462\Google.Apis.Drive.v3.dll</HintPath>
+    </Reference>
     <Reference Include="MailKit, Version=4.11.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
       <HintPath>..\packages\MailKit.4.11.0\lib\net47\MailKit.dll</HintPath>
     </Reference>
@@ -259,6 +262,7 @@
     <Compile Include="Services\AccountService.cs" />
     <Compile Include="Services\EmailService.cs" />
     <Compile Include="Services\JWTService.cs" />
+    <Compile Include="Templates\EmailTitle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />

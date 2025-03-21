@@ -61,5 +61,22 @@ namespace OMS_5D_Tech.Controllers
             var result = await _accountService.DeleteAccountAsync(id);
             return Json(result);
         }
+
+        [HttpPost]
+        [Route("reset-pasword")]
+        public async Task<ActionResult> ResetPassword(string email)
+        {
+            var result = await _accountService.ResetPasswordAsync(email);
+            return Json(result);
+        }
+
+        [HttpPost]
+        [Route("verify-email")]
+        public async Task<ActionResult> VerifyEmail(string email)
+        {
+            var result = await _accountService.VerifyEmailAsync(email);
+            return Json(result);
+        }
+
     }
 }

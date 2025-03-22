@@ -8,7 +8,7 @@ public class JwtService
 {
     private const string _secretKey = "NBTrvShWqPMJCjwKht3gucS7gTM4TY1vsBXW6dM588ViBMwqLnlsX5nFTf67jS_vTaDzidy6HlUza4rmBb67Lg==";
 
-    public string GenerateToken(string email, int userId)
+    public string GenerateToken(string email, int userId , string role)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_secretKey);
@@ -17,7 +17,8 @@ public class JwtService
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role)
             }),
             Expires = DateTime.UtcNow.AddMinutes(30), // Đang đặt access_token có giá trị trong 30 phút
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Mvc;
+using OMS_5D_Tech.DTOs;
+using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Models;
 
 namespace OMS_5D_Tech.Controllers
@@ -14,9 +16,19 @@ namespace OMS_5D_Tech.Controllers
             _accountService = accountService;
         }
 
+        [HttpGet]
+        [Route("get-accounts")]
+        [CustomAuthorize(Roles ="admin")]
+        public async Task<ActionResult> GetAccounts()
+        {
+            var result = await _accountService.GetAccount();
+            return Json(result , JsonRequestBehavior.AllowGet);
+        }
+
         [HttpPost]
         [Route("register")]
-        public async Task<ActionResult> Register(tbl_Accounts acc)
+        [AllowAnonymous]
+        public async Task<ActionResult> Register(AccountDTO acc)
         {
             var result = await _accountService.RegisterAsync(acc);
             return Json(result);
@@ -24,6 +36,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("signin-google")]
+        [AllowAnonymous]
         public async Task<ActionResult> GoogleLogin(string idToken)
         {
             var result = await _accountService.RegisterWithGoogleAsync(idToken);
@@ -32,6 +45,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("login")]
+        [AllowAnonymous]
         public async Task<ActionResult> Login(string email, string password)
         {
             var result = await _accountService.LoginAsync(email, password);
@@ -40,6 +54,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpGet]
         [Route("detail/{id:int}")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<ActionResult> FindAccountByID(int id)
         {
             var result = await _accountService.FindAccountByIdAsync(id);
@@ -48,6 +63,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("change-password")]
+        [CustomAuthorize]
         public async Task<ActionResult> UpdateAccount(tbl_Accounts acc)
         {
             var result = await _accountService.UpdateAccountAsync(acc);
@@ -56,6 +72,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpDelete]
         [Route("delete/{id:int}")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<ActionResult> DeleteAccount(int id)
         {
             var result = await _accountService.DeleteAccountAsync(id);

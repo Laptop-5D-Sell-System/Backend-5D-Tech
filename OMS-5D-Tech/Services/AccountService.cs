@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.EnterpriseServices.CompensatingResourceManager;
 using System.Linq;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 using System.Web.Helpers;
 using BCrypt.Net;
 using Google.Apis.Auth;
+using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Models;
 using OMS_5D_Tech.Services;
 using OMS_5D_Tech.Templates;
@@ -27,41 +30,71 @@ public class AccountService : IAccountService
         _jwtService = new JwtService();
     }
 
-    public async Task<object> RegisterAsync(tbl_Accounts acc)
+    public async Task<object> RegisterAsync(AccountDTO accDto)
     {
+        var validationContext = new ValidationContext(accDto);
+        var validationResults = new List<ValidationResult>();
+
+        if (!Validator.TryValidateObject(accDto, validationContext, validationResults, true))
+        {
+            return new { httpStatus = HttpStatusCode.BadRequest, mess = validationResults.Select(v => v.ErrorMessage) };
+        }
         try
         {
-            var check = await _dbContext.tbl_Accounts.AnyAsync(_ => _.email == acc.email);
+            var check = await _dbContext.tbl_Accounts.AnyAsync(_ => _.email == accDto.email);
             if (check)
             {
-                return new { httpStatus = HttpStatusCode.BadRequest, mess = "Email này đã được sử dụng !" };
+                return new { httpStatus = HttpStatusCode.BadRequest, mess = "Email này đã được sử dụng!" };
             }
 
-            if (string.IsNullOrWhiteSpace(acc.password_hash))
+            if (string.IsNullOrWhiteSpace(accDto.password_hash))
             {
-                return new { httpStatus = HttpStatusCode.BadRequest, mess = "Mật khẩu không được để trống !" };
+                return new { httpStatus = HttpStatusCode.BadRequest, mess = "Mật khẩu không được để trống!" };
             }
 
-            acc.password_hash = BCrypt.Net.BCrypt.HashPassword(acc.password_hash);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-           
-            acc.refresh_token = refreshToken;
-            acc.refresh_token_expiry = DateTime.UtcNow.AddDays(7);
-            acc.created_at = DateTime.Now;
-            acc.is_active = true;
-            _dbContext.tbl_Accounts.Add(acc);
+            // Tạo tài khoản
+            var account = new tbl_Accounts
+            {
+                email = accDto.email,
+                password_hash = BCrypt.Net.BCrypt.HashPassword(accDto.password_hash),
+                refresh_token = _jwtService.GenerateRefreshToken(),
+                refresh_token_expiry = DateTime.UtcNow.AddDays(7),
+                created_at = DateTime.Now,
+                is_active = true,
+                is_verified = false
+            };
+
+            _dbContext.tbl_Accounts.Add(account);
+            await _dbContext.SaveChangesAsync();
+
+            var user = new tbl_Users
+            {
+                account_id = account.id, 
+                created_at = DateTime.Now
+            };
+
+            _dbContext.tbl_Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
             // Gửi email xác thực
             var emailService = new EmailService();
             var emailTitle = new EmailTitle();
-            emailService.SendEmail(acc.email, "Xác thực đăng ký", emailTitle.SendVerifyEmail(acc.email));
+            emailService.SendEmail(account.email, "Xác thực đăng ký", emailTitle.SendVerifyEmail(account.email));
 
+            // Tạo token
+            var token = _jwtService.GenerateToken(account.email, account.id , account.role);
 
-            // Tạo token ngay sau khi đăng ký thành công
-            var token = _jwtService.GenerateToken(acc.email, acc.id);
+            var accountInfo = new
+            {
+                account.id,
+                account.email,
+                account.is_active,
+                account.is_verified,
+                account.created_at,
+                user_id = user.id
+            };
 
-            return new { httpStatus = HttpStatusCode.Created, mess = "Đăng ký thành công!", account = acc };
+            return new { httpStatus = HttpStatusCode.Created, mess = "Đăng ký thành công!" , accountInfo};
         }
         catch (Exception ex)
         {
@@ -96,7 +129,7 @@ public class AccountService : IAccountService
                 await _dbContext.SaveChangesAsync();
             }
 
-            var accessToken = _jwtService.GenerateToken(user.email, user.id);
+            var accessToken = _jwtService.GenerateToken(user.email, user.id, user.role);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
             user.refresh_token = refreshToken;
@@ -126,7 +159,7 @@ public class AccountService : IAccountService
             return new { httpStatus = HttpStatusCode.NotFound, mess = "Email hoặc mật khẩu không đúng!" };
         }
 
-        var token = _jwtService.GenerateToken(user.email, user.id);
+        var token = _jwtService.GenerateToken(user.email, user.id, user.role);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         user.refresh_token = refreshToken;
@@ -138,7 +171,21 @@ public class AccountService : IAccountService
 
     public async Task<object> FindAccountByIdAsync(int id)
     {
-        var account = await _dbContext.tbl_Accounts.FindAsync(id);
+        var account = await _dbContext.tbl_Accounts.Where(_ => _.id == id).Select(_ => new
+        {
+            _.id,
+            _.email,
+            _.is_active,
+            _.is_verified,
+            _.created_at,
+            _.updated_at,
+            _.role,
+            _.refresh_token_expiry,
+            id_user = _dbContext.tbl_Users
+                .Where(user => user.account_id == _.id)
+                .Select(user => user.id)
+                .FirstOrDefault()
+        }).FirstOrDefaultAsync();
         if (account != null)
         {
             return new { httpStatus = HttpStatusCode.OK, mess = "Lấy thông tin tài khoản thành công!", account };
@@ -263,5 +310,25 @@ public class AccountService : IAccountService
         {
             return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra" + ex.Message };
         }
+    }
+
+    public async Task<object> GetAccount()
+    {
+        var accounts = await _dbContext.tbl_Accounts.Select(account => new
+        {
+            account.id,
+            account.email,
+            account.created_at,
+            account.updated_at,
+            account.is_verified,
+            account.role,
+            account.refresh_token_expiry,
+            id_user = _dbContext.tbl_Users
+                .Where(user => user.account_id == account.id)
+                .Select(user => user.id)
+                .FirstOrDefault()
+        }).ToListAsync();
+
+        return new {httpStatus = HttpStatusCode.OK,mess = "Danh sách toàn bộ tài khoản" ,accounts = accounts };
     }
 }

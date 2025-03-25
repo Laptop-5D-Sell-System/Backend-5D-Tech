@@ -245,6 +245,7 @@
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\tbl_AccountsController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
+    <Compile Include="Controllers\tbl_OrderController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
     <Compile Include="DTOs\OrderItemDTO.cs" />
     <Compile Include="DTOs\OrderDTO.cs" />
@@ -301,6 +302,7 @@
     <Folder Include="Repositories\" />
     <Folder Include="Validates\" />
     <Folder Include="Views\Default\" />
+    <Folder Include="Views\tbl_Order\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <PropertyGroup>

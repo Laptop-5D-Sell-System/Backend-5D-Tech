@@ -12,6 +12,8 @@ namespace OMS_5D_Tech.Interfaces
     {
         Task<object> CreateOrderAsync(int id , OrderDTO od);
         Task<object> FindOrderByIdAsync(int id);
+        Task<object> CancelOrderAsync(int id);
+        Task<object> GetMyOrders(int id , int ?page , int ?pageSize);
         Task<object> UpdateOrderAsync(OrderDTO od);
         Task<object> DeleteOrderAsync(int id);
     }

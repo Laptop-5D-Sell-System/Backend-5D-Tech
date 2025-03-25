@@ -1,4 +1,6 @@
 using System.Web.Mvc;
+using OMS_5D_Tech.Interfaces;
+using OMS_5D_Tech.Services;
 using Unity;
 using Unity.Mvc5;
 
@@ -15,6 +17,7 @@ namespace OMS_5D_Tech
 
             // e.g. container.RegisterType<ITestService, TestService>();
             container.RegisterType<IAccountService, AccountService>();
+            container.RegisterType<ICategoryService, CategoryService>();
             DependencyResolver.SetResolver(new UnityDependencyResolver(container));
         }
     }

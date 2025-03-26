@@ -27,7 +27,7 @@ namespace OMS_5D_Tech.Controllers
         }
 
         [HttpGet]
-        [Route("detail/{id:int}")]
+        [Route("detail")]
         [CustomAuthorize(Roles ="admin")]
         public async Task<ActionResult> FindOrderById(int id)
         {
@@ -36,7 +36,7 @@ namespace OMS_5D_Tech.Controllers
         }
         
         [HttpPost]
-        [Route("cancel/{id:int}")]
+        [Route("cancel")]
         public async Task<ActionResult> CancelOrderById(int id)
         {
             var result = await _orderService.CancelOrderAsync(id);
@@ -45,7 +45,7 @@ namespace OMS_5D_Tech.Controllers
         [CustomAuthorize]
         
         [HttpGet]
-        [Route("my-orders/{id:int}")]
+        [Route("my-orders")]
         public async Task<ActionResult> GetMyOrders(int id , int? page , int ?pageSize)
         {
             var result = await _orderService.GetMyOrders(id , page , pageSize);
@@ -54,12 +54,21 @@ namespace OMS_5D_Tech.Controllers
         [CustomAuthorize]
 
         [HttpDelete]
-        [Route("delete/{id:int}")]
+        [Route("delete")]
         [CustomAuthorize(Roles = "admin")]
         public async Task<ActionResult> DeleteOrder(int id)
         {
             var result = await _orderService.DeleteOrderAsync(id);
             return Json(result);
-        }        
+        }
+
+        [HttpPost]
+        [Route("update")]
+        [CustomAuthorize]
+        public async Task<ActionResult> UpdateOrder(int id, OrderDTO od)
+        {
+            var result = await _orderService.UpdateOrderAsync(id , od);
+            return Json(result);
+        }
     }
 }

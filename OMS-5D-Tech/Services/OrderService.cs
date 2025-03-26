@@ -203,12 +203,104 @@ namespace OMS_5D_Tech.Services
             }
         }
 
-        //TODO
-        public Task<object> UpdateOrderAsync(OrderDTO od)
+        public async Task<object> UpdateOrderAsync(int id , OrderDTO od)
         {
-            throw new NotImplementedException();
+            using (var transaction = _dbContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    if (id <= 0)
+                    {
+                        return new { HttpStatus = HttpStatusCode.BadRequest, mess = "ID đơn hàng không hợp lệ!" };
+                    }
+
+                    var existingOrder = await _dbContext.tbl_Orders
+                        .Include(o => o.tbl_Order_Items)
+                        .FirstOrDefaultAsync(o => o.id == id);
+
+                    if (existingOrder == null)
+                    {
+                        return new { HttpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy đơn hàng!" };
+                    }
+
+                    // Cập nhật trạng thái đơn hàng nếu có
+                    if (!string.IsNullOrEmpty(od.status))
+                    {
+                        existingOrder.status = od.status;
+                    }
+
+                    if (od.OrderItems != null && od.OrderItems.Any())
+                    {
+                        var productIds = od.OrderItems.Select(i => i.product_id).ToList();
+                        var existingProducts = await _dbContext.tbl_Products
+                            .Where(p => productIds.Contains(p.id))
+                            .ToDictionaryAsync(p => p.id, p => p);
+
+                        foreach (var item in od.OrderItems)
+                        {
+                            if (!existingProducts.ContainsKey(item.product_id ?? 0))
+                            {
+                                return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Sản phẩm ID {item.product_id} không tồn tại." };
+                            }
+                        }
+
+                        // Danh sách order_items hiện tại trong database
+                        var existingOrderItems = _dbContext.tbl_Order_Items
+                            .Where(oi => oi.order_id == existingOrder.id)
+                            .ToList();
+
+                        foreach (var item in od.OrderItems)
+                        {
+                            var existingItem = existingOrderItems
+                                .FirstOrDefault(oi => oi.product_id == item.product_id);
+
+                            if (existingItem != null)
+                            {
+                                if (item.quantity > 0)
+                                {
+                                    // Cập nhật số lượng nếu sản phẩm đã có trong đơn hàng
+                                    existingItem.quantity = item.quantity;
+                                }
+                                else
+                                {
+                                    // Nếu số lượng = 0, xóa sản phẩm khỏi đơn hàng
+                                    _dbContext.tbl_Order_Items.Remove(existingItem);
+                                }
+                            }
+                            else
+                            {
+                                // Nếu sản phẩm chưa có, thêm vào đơn hàng
+                                _dbContext.tbl_Order_Items.Add(new tbl_Order_Items
+                                {
+                                    order_id = existingOrder.id,
+                                    product_id = item.product_id,
+                                    quantity = item.quantity,
+                                    price = existingProducts[item.product_id ?? 0].price
+                                });
+                            }
+                        }
+
+                        await _dbContext.SaveChangesAsync();
+
+                        // Cập nhật tổng tiền đơn hàng
+                        existingOrder.total = await _dbContext.tbl_Order_Items
+                            .Where(oi => oi.order_id == existingOrder.id)
+                            .SumAsync(oi => oi.quantity * oi.price);
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                    transaction.Commit();
+
+                    return new { HttpStatus = HttpStatusCode.OK, mess = "Cập nhật đơn hàng thành công!"};
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
+                }
+            }
         }
-        //TODO
+
         public async Task<object> GetMyOrders(int id, int? page, int? pageSize)
         {
             try

@@ -3,51 +3,53 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Mvc;
+using System.Web.Http;
 using OMS_5D_Tech.Interfaces;
 using OMS_5D_Tech.Models;
+using OMS_5D_Tech.Services;
 
 namespace OMS_5D_Tech.Controllers
 {
     [RoutePrefix("category")] 
-    public class tbl_CategoriesController : Controller
+    public class tbl_CategoriesController : ApiController
     {
-        private readonly ICategoryService _categoryService;
-
-        public tbl_CategoriesController(ICategoryService categoryService)
+        private readonly CategoryService _categoryService;
+        private readonly DBContext _dbContext;
+        public tbl_CategoriesController()
         {
-            _categoryService = categoryService;
+            _dbContext = new DBContext();
+            _categoryService = new CategoryService(_dbContext);
         }
 
         [HttpPost]
         [Route("create")]
-        public async Task<ActionResult> CreateCategory(tbl_Categories cat)
+        public async Task<IHttpActionResult> CreateCategory([FromBody] tbl_Categories cat)
         {
             var result = await _categoryService.CreateCategoryAsync(cat);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpGet]
-        [Route("detail/{id:int}")]
-        public async Task<ActionResult> FindCategoryById(int id)
+        [Route("detail")]
+        public async Task<IHttpActionResult> FindCategoryById(int id)
         {
             var result = await _categoryService.FindCategoryByIdAsync(id);
-            return Json(result, JsonRequestBehavior.AllowGet);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("update")]
-        public async Task<ActionResult> UpdateCategory(tbl_Categories cat)
+        public async Task<IHttpActionResult> UpdateCategory([FromBody] tbl_Categories cat)
         {
             var result = await _categoryService.UpdateCategoryAsync(cat);
-            return Json(result);
+            return Ok(result);
         }
         [HttpDelete]
-        [Route("delete/{id:int}")]
-        public async Task<ActionResult> DeleteCategory(int id)
+        [Route("delete")]
+        public async Task<IHttpActionResult> DeleteCategory(int id)
         {
             var result = await _categoryService.DeleteCategoryAsync(id);
-            return Json(result);
+            return Ok(result);
         }
     }
 }

@@ -94,7 +94,7 @@ public class AccountService : IAccountService
                 user_id = user.id
             };
 
-            return new { httpStatus = HttpStatusCode.Created, mess = "Đăng ký thành công!" , accountInfo};
+            return accountInfo;
         }
         catch (Exception ex)
         {
@@ -138,8 +138,6 @@ public class AccountService : IAccountService
 
             return new
             {
-                httpStatus = HttpStatusCode.Created,
-                mess = "Đăng nhập thành công!",
                 accessToken,
                 refreshToken
             };
@@ -166,7 +164,7 @@ public class AccountService : IAccountService
         user.refresh_token_expiry = DateTime.UtcNow.AddDays(7); // Refresh lại refresh_token 7 ngày
 
         await _dbContext.SaveChangesAsync();
-        return new { httpStatus = HttpStatusCode.OK, mess = "Đăng nhập thành công!", token };
+        return token;
     }
 
     public async Task<object> FindAccountByIdAsync(int id)
@@ -188,7 +186,7 @@ public class AccountService : IAccountService
         }).FirstOrDefaultAsync();
         if (account != null)
         {
-            return new { httpStatus = HttpStatusCode.OK, mess = "Lấy thông tin tài khoản thành công!", account };
+            return account;
         }
         return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy tài khoản người dùng!" };
     }
@@ -214,7 +212,7 @@ public class AccountService : IAccountService
             existingAccount.updated_at = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
-            return new { httpStatus = HttpStatusCode.OK, mess = "Sửa thông tin tài khoản thành công!", account = existingAccount };
+            return new {account = existingAccount };
         }
         catch (Exception ex)
         {

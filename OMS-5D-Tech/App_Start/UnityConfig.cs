@@ -4,7 +4,7 @@ using Unity.Mvc5;
 
 namespace OMS_5D_Tech
 {
-    public static class UnityConfig
+    public static class UnityConfig                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
     {
         public static void RegisterComponents()
         {

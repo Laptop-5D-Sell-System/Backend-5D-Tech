@@ -283,6 +283,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\tbl_AccountsController.cs" />
+    <Compile Include="Controllers\tbl_CategoriesController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
     <Compile Include="DTOs\UserDTO.cs" />
     <Compile Include="Filters\CustomAuthorizeAttribute.cs" />
@@ -290,6 +291,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\IAccountService.cs" />
+    <Compile Include="Interfaces\ICategoryService.cs" />
     <Compile Include="Interfaces\IEmailService.cs" />
     <Compile Include="Middlewares\JwtMiddleware.cs" />
     <Compile Include="Models\DBContext.cs" />
@@ -306,6 +308,7 @@
     <Compile Include="Models\tbl_Users.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AccountService.cs" />
+    <Compile Include="Services\CategoryService.cs" />
     <Compile Include="Services\EmailService.cs" />
     <Compile Include="Services\JWTService.cs" />
     <Compile Include="Templates\EmailTitle.cs" />

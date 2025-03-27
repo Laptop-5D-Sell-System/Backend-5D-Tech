@@ -52,7 +52,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> Login([FromBody] AccountDTO login)
         {
             var result = await _accountService.LoginAsync(login.email, login.password_hash);
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.OK, mess = "Đăng nhập thành công!", data = result });
+            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.OK, mess = "Đăng nhập thành công!", token = result });
         }
 
 

@@ -11,6 +11,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Helpers;
+using System.Web.Http.Results;
 using BCrypt.Net;
 using Google.Apis.Auth;
 using OMS_5D_Tech.DTOs;
@@ -35,14 +36,10 @@ public class AccountService : IAccountService
         var validationContext = new ValidationContext(accDto);
         var validationResults = new List<ValidationResult>();
 
-        if (!Validator.TryValidateObject(accDto, validationContext, validationResults, true))
-        {
-            return new { httpStatus = HttpStatusCode.BadRequest, mess = validationResults.Select(v => v.ErrorMessage) };
-        }
         try
         {
-            var check = await _dbContext.tbl_Accounts.AnyAsync(_ => _.email == accDto.email);
-            if (check)
+            var check = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == accDto.email);
+            if (check != null)
             {
                 return new { httpStatus = HttpStatusCode.BadRequest, mess = "Email này đã được sử dụng!" };
             }
@@ -164,7 +161,7 @@ public class AccountService : IAccountService
         user.refresh_token_expiry = DateTime.UtcNow.AddDays(7); // Refresh lại refresh_token 7 ngày
 
         await _dbContext.SaveChangesAsync();
-        return token;
+        return new { HttpStatus = HttpStatusCode.OK, mess = "Đăng nhập thành công!", token } ;
     }
 
     public async Task<object> FindAccountByIdAsync(int id)
@@ -186,7 +183,7 @@ public class AccountService : IAccountService
         }).FirstOrDefaultAsync();
         if (account != null)
         {
-            return account;
+            return new { httpStatus = HttpStatusCode.OK, mess = "Lấy thông tin người dùng thành công!" , user = account };
         }
         return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy tài khoản người dùng!" };
     }
@@ -212,7 +209,7 @@ public class AccountService : IAccountService
             existingAccount.updated_at = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
-            return new {account = existingAccount };
+            return new {httpStatus = HttpStatusCode.OK , mess = "Cập nhật thông tin thành công !" , account = existingAccount };
         }
         catch (Exception ex)
         {

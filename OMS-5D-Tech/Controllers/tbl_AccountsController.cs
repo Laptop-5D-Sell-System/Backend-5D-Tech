@@ -25,7 +25,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> GetAccounts()
         {
             var result = await _accountService.GetAccount();
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.OK, mess = "Lấy danh sách người dùng thành công !", data = result });
+            return Ok(result);
         }
 
         [HttpPost]
@@ -34,7 +34,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> Register(AccountDTO acc)
         {
             var result = await _accountService.RegisterAsync(acc);
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.Created, mess = "Đăng ký thành công!"});
+            return Ok(result);
         }
 
         [HttpPost]
@@ -43,7 +43,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> GoogleLogin(string idToken)
         {
             var result = await _accountService.RegisterWithGoogleAsync(idToken);
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.Created, mess = "Đăng ký thành công!" });
+            return Ok(result);
         }
 
         [HttpPost]
@@ -52,7 +52,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> Login([FromBody] AccountDTO login)
         {
             var result = await _accountService.LoginAsync(login.email, login.password_hash);
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.OK, mess = "Đăng nhập thành công!", token = result });
+            return Ok(result);
         }
 
 
@@ -62,7 +62,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> FindAccountByID(int id)
         {
             var result = await _accountService.FindAccountByIdAsync(id);
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.OK, mess = "Lấy thông tin người dùng thành công!" , data = result });
+            return Ok(result);
         }
 
         [HttpPost]
@@ -71,7 +71,7 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> UpdateAccount(tbl_Accounts acc)
         {
             var result = await _accountService.UpdateAccountAsync(acc);
-            return Content(HttpStatusCode.OK, new { HttpStatus = HttpStatusCode.OK, mess = "Cập nhật thông tin người dùng thành công!", data = result });
+            return Ok(result);
         }
 
         [HttpDelete]

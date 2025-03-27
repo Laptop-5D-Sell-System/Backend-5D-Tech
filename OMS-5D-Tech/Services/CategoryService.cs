@@ -69,8 +69,10 @@ namespace OMS_5D_Tech.Services
                 {
                     return new { httpStatus = HttpStatusCode.BadRequest, mess = "Thể loại đã tồn tại, không thể sửa!" };
                 }
-                check.name = cat.name;
-                check.description = cat.description;
+                if(cat.name != null)
+                    check.name = cat.name;
+                if(cat.description != null)
+                    check.description = cat.description;
                 await _dbContext.SaveChangesAsync();
                 return new { htppStatus = HttpStatusCode.OK, mess = "Sửa thể loại thành công !", category = check };
             }catch(Exception ex)

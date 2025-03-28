@@ -36,6 +36,6 @@ namespace OMS_5D_Tech.DTOs
 
         public DateTime? refresh_token_expiry { get; set; }
 
-        UserDTO User { get; set; }
+        UserDTO User { get; set; } 
     }
 }

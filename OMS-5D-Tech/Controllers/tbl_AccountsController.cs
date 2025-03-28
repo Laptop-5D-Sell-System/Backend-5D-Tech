@@ -1,99 +1,102 @@
-﻿using System.Threading.Tasks;
-using System.Web.Mvc;
+﻿using System.Net;
+using System.Threading.Tasks;
+using System.Web.Http;
 using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Models;
 
 namespace OMS_5D_Tech.Controllers
 {
-    [RoutePrefix("auth")] // Đặt root cho api
-    public class tbl_AccountsController : Controller
+    [RoutePrefix("auth")]
+    public class tbl_AccountsController : ApiController
     {
-        private readonly IAccountService _accountService;
+        private readonly AccountService _accountService;
 
-        public tbl_AccountsController(IAccountService accountService)
+        private readonly DBContext _dbContext;
+        public tbl_AccountsController()
         {
-            _accountService = accountService;
+            _dbContext = new DBContext();
+            _accountService = new AccountService(_dbContext);
         }
 
         [HttpGet]
         [Route("get-accounts")]
-        [CustomAuthorize(Roles ="admin")]
-        public async Task<ActionResult> GetAccounts()
+        [CustomAuthorize(Roles = "admin")]
+        public async Task<IHttpActionResult> GetAccounts()
         {
             var result = await _accountService.GetAccount();
-            return Json(result , JsonRequestBehavior.AllowGet);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("register")]
         [AllowAnonymous]
-        public async Task<ActionResult> Register(AccountDTO acc)
+        public async Task<IHttpActionResult> Register(AccountDTO acc)
         {
             var result = await _accountService.RegisterAsync(acc);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("signin-google")]
         [AllowAnonymous]
-        public async Task<ActionResult> GoogleLogin(string idToken)
+        public async Task<IHttpActionResult> GoogleLogin(string idToken)
         {
             var result = await _accountService.RegisterWithGoogleAsync(idToken);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
-        public async Task<ActionResult> Login(string email, string password)
+        public async Task<IHttpActionResult> Login([FromBody] AccountDTO login)
         {
-            var result = await _accountService.LoginAsync(email, password);
-            return Json(result);
+            var result = await _accountService.LoginAsync(login.email, login.password_hash);
+            return Ok(result);
         }
 
+
         [HttpGet]
-        [Route("detail/{id:int}")]
+        [Route("detail")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<ActionResult> FindAccountByID(int id)
+        public async Task<IHttpActionResult> FindAccountByID(int id)
         {
             var result = await _accountService.FindAccountByIdAsync(id);
-            return Json(result, JsonRequestBehavior.AllowGet);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("change-password")]
         [CustomAuthorize]
-        public async Task<ActionResult> UpdateAccount(tbl_Accounts acc)
+        public async Task<IHttpActionResult> UpdateAccount(tbl_Accounts acc)
         {
             var result = await _accountService.UpdateAccountAsync(acc);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpDelete]
         [Route("delete/{id:int}")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<ActionResult> DeleteAccount(int id)
+        public async Task<IHttpActionResult> DeleteAccount(int id)
         {
             var result = await _accountService.DeleteAccountAsync(id);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpPost]
-        [Route("reset-pasword")]
-        public async Task<ActionResult> ResetPassword(string email)
+        [Route("reset-password")]
+        public async Task<IHttpActionResult> ResetPassword(string email)
         {
             var result = await _accountService.ResetPasswordAsync(email);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("verify-email")]
-        public async Task<ActionResult> VerifyEmail(string email)
+        public async Task<IHttpActionResult> VerifyEmail(string email)
         {
             var result = await _accountService.VerifyEmailAsync(email);
-            return Json(result);
+            return Ok(result);
         }
-
     }
 }

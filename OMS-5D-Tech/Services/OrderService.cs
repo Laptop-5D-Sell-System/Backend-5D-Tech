@@ -356,5 +356,51 @@ namespace OMS_5D_Tech.Services
                 return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
             }
         }
+
+        public async Task<object> Statistics(string status, string condition)
+        {
+            try
+            {
+                var query = _dbContext.tbl_Orders.Where(_ => _.status == status);
+
+                condition = string.IsNullOrEmpty(condition) ? "day" : condition.ToLower();
+
+                switch (condition.ToLower())
+                {
+                    case "day":
+                        query = query.Where(_ => _.order_date.HasValue &&
+                                                    _.order_date.Value.Year == DateTime.Now.Year &&
+                                                    _.order_date.Value.Month == DateTime.Now.Month &&
+                                                    _.order_date.Value.Day == DateTime.Now.Day);
+                        break;
+
+                    case "month":
+                        query = query.Where(_ => _.order_date.HasValue &&
+                                                    _.order_date.Value.Year == DateTime.Now.Year &&
+                                                    _.order_date.Value.Month == DateTime.Now.Month);
+                        break;
+
+                    case "year":
+                        query = query.Where(_ => _.order_date.HasValue &&
+                                                    _.order_date.Value.Year == DateTime.Now.Year);
+                        break;
+                    default:
+                        query = query.Where(_ => _.order_date.HasValue &&
+                                                    _.order_date.Value.Year == DateTime.Now.Year &&
+                                                    _.order_date.Value.Month == DateTime.Now.Month &&
+                                                    _.order_date.Value.Day == DateTime.Now.Day);
+                        break;
+                }
+                
+
+                var result = await query.Select(_ => new { _.total }).ToListAsync();
+
+                return new { HttpStatus = HttpStatusCode.OK, data = result };
+            }
+            catch (Exception ex)
+            {
+                return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
+            }
+        }
     }
 }

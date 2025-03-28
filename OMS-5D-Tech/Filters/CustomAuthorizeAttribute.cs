@@ -1,27 +1,43 @@
-﻿using System.Web.Mvc;  // Chắc chắn chỉ dùng Mvc
+﻿using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Threading;
+using System.Web.Http;
+using System.Web.Http.Controllers;
+using System.Web.Http.Filters;
 
 namespace OMS_5D_Tech.Filters
 {
-    public class CustomAuthorizeAttribute : System.Web.Mvc.AuthorizeAttribute
+    public class CustomAuthorizeAttribute : AuthorizationFilterAttribute
     {
-        protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
+        public string Roles { get; set; }
+
+        public override void OnAuthorization(HttpActionContext actionContext)
         {
-            if (filterContext.HttpContext.User.Identity.IsAuthenticated)
+            var user = actionContext.RequestContext.Principal as ClaimsPrincipal;
+
+            if (user == null || !user.Identity.IsAuthenticated)
             {
-                filterContext.Result = new JsonResult
-                {
-                    Data = new { httpStatus = 403, mess = "Bạn không có quyền truy cập!" },
-                    JsonRequestBehavior = JsonRequestBehavior.AllowGet
-                };
+                actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
+                    new { httpStatus = 401, mess = "Vui lòng đăng nhập trước!" });
+                return;
             }
-            else
+
+            if (!string.IsNullOrEmpty(Roles))
             {
-                filterContext.Result = new JsonResult
+                var userRoles = user.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+
+                if (!userRoles.Intersect(Roles.Split(',')).Any())
                 {
-                    Data = new { httpStatus = 401, mess = "Vui lòng đăng nhập trước!" },
-                    JsonRequestBehavior = JsonRequestBehavior.AllowGet
-                };
+                    actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Forbidden,
+                        new { httpStatus = 403, mess = "Bạn không có quyền truy cập!" });
+                    return;
+                }
             }
+
+            base.OnAuthorization(actionContext);
         }
     }
 }

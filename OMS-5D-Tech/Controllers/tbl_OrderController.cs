@@ -1,74 +1,85 @@
 ﻿using System.Threading.Tasks;
-using System.Web.Mvc;
 using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Filters;
-using OMS_5D_Tech.Interfaces;
+using OMS_5D_Tech.Services;
 using OMS_5D_Tech.Models;
+using System.Web.Http;
 
 namespace OMS_5D_Tech.Controllers
 {
     [RoutePrefix("order")]
-    public class tbl_OrderController : Controller
+    public class tbl_OrderController : ApiController
     {
-        private readonly IOrderService _orderService;
+        private readonly OrderService _orderService;
+        private readonly DBContext _dbContext;
 
-        public tbl_OrderController(IOrderService orderService)
+        public tbl_OrderController()
         {
-            _orderService = orderService;
+            _dbContext = new DBContext();   
+            _orderService = new OrderService(_dbContext);
         }
 
         [HttpPost]
         [Route("create")]
         [CustomAuthorize]
-        public async Task<ActionResult> CreateOrder(int id, OrderDTO od)
+        public async Task<IHttpActionResult> CreateOrder([FromUri] int id, [FromBody] OrderDTO od)
         {
             var result = await _orderService.CreateOrderAsync(id , od);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpGet]
         [Route("detail")]
         [CustomAuthorize(Roles ="admin")]
-        public async Task<ActionResult> FindOrderById(int id)
+        public async Task<IHttpActionResult> FindOrderById([FromUri] int id)
         {
             var result = await _orderService.FindOrderByIdAsync(id);
-            return Json(result , JsonRequestBehavior.AllowGet);
+            return Ok(result);
         }
         
         [HttpPost]
         [Route("cancel")]
-        public async Task<ActionResult> CancelOrderById(int id)
+        public async Task<IHttpActionResult> CancelOrderById([FromUri] int id)
         {
             var result = await _orderService.CancelOrderAsync(id);
-            return Json(result);
+            return Ok(result);
         }
         [CustomAuthorize]
-        
+
         [HttpGet]
         [Route("my-orders")]
-        public async Task<ActionResult> GetMyOrders(int id , int? page , int ?pageSize)
-        {
-            var result = await _orderService.GetMyOrders(id , page , pageSize);
-            return Json(result , JsonRequestBehavior.AllowGet);
-        }
         [CustomAuthorize]
+        public async Task<IHttpActionResult> GetMyOrders([FromUri] int id, [FromUri] int? page = 1, [FromUri] int? pageSize = 10)
+        {
+            var result = await _orderService.GetMyOrders(id, page, pageSize);
+            return Ok(result);
+        }
 
         [HttpDelete]
         [Route("delete")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<ActionResult> DeleteOrder(int id)
+        public async Task<IHttpActionResult> DeleteOrder([FromUri] int id)
         {
             var result = await _orderService.DeleteOrderAsync(id);
-            return Json(result);
+            return Ok(result);
         }
 
         [HttpPost]
         [Route("update")]
         [CustomAuthorize]
-        public async Task<ActionResult> UpdateOrder(int id, OrderDTO od)
+        public async Task<IHttpActionResult> UpdateOrder([FromUri]int id, [FromBody]OrderDTO od)
         {
             var result = await _orderService.UpdateOrderAsync(id , od);
-            return Json(result);
+            return Ok(result);
+        }
+        
+        [HttpGet]
+        [Route("statistics")]
+        [CustomAuthorize(Roles ="admin")]
+        public async Task<IHttpActionResult> Statistics([FromUri] string status, [FromUri] string condition)
+        {
+            var result = await _orderService.Statistics(status , condition);
+            return Ok(result);
         }
     }
 }

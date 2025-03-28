@@ -91,7 +91,7 @@ public class AccountService : IAccountService
                 user_id = user.id
             };
 
-            return accountInfo;
+            return new {HttpSatus = HttpStatusCode.Created , mess = "Đăng ký thành công !" };
         }
         catch (Exception ex)
         {
@@ -133,11 +133,7 @@ public class AccountService : IAccountService
             user.updated_at = DateTime.Now;
             await _dbContext.SaveChangesAsync();
 
-            return new
-            {
-                accessToken,
-                refreshToken
-            };
+            return new { HttpStatus = HttpStatusCode.Created, mess = "Đăng ký thành công !" };
         }
         catch (Exception ex)
         {

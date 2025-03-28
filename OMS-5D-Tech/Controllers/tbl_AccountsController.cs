@@ -75,7 +75,7 @@ namespace OMS_5D_Tech.Controllers
         }
 
         [HttpDelete]
-        [Route("delete/{id:int}")]
+        [Route("delete")]
         [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> DeleteAccount(int id)
         {

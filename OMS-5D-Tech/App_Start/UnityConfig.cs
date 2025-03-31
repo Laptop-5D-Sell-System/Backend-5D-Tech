@@ -20,6 +20,7 @@ namespace OMS_5D_Tech
             container.RegisterType<ICategoryService, CategoryService>();
             container.RegisterType<IOrderService, OrderService>();
             container.RegisterType<IProductService, ProductService>();
+            container.RegisterType<IReportService, ReportService>();
             DependencyResolver.SetResolver(new UnityDependencyResolver(container));
         }
     }

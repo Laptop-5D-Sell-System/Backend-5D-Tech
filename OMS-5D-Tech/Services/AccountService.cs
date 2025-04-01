@@ -362,19 +362,11 @@ public class AccountService : IAccountService
                 return new { httpStatus = HttpStatusCode.BadRequest, mess = "Không thể tự xoá chính bản thân !" };
             }
 
-            if (isAccountExist.is_active)
-            {
-                isAccountExist.is_active = false;
-                await _dbContext.SaveChangesAsync();
-                return new { httpStatus = HttpStatusCode.OK, mess = "Khoá tài khoản thành công !"};
-            }
-            else
-            {
-                isAccountExist.is_active = true;
-                await _dbContext.SaveChangesAsync();
-                return new { httpStatus = HttpStatusCode.OK, mess = "Mở khoá tài khoản thành công !" };
-            }
+            isAccountExist.is_active = !isAccountExist.is_active;
+            await _dbContext.SaveChangesAsync();
 
+            var message = isAccountExist.is_active ? "Mở khóa tài khoản thành công!" : "Khóa tài khoản thành công!";
+            return new { httpStatus = HttpStatusCode.OK, mess = message };
         }
         catch (Exception ex)
         {

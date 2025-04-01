@@ -27,12 +27,14 @@ namespace OMS_5D_Tech.DTOs
 
         public DateTime? updated_at { get; set; }
 
-        public bool? is_active { get; set; } = false;
+        public bool is_active { get; set; } = false;
 
-        public bool? is_verified { get; set; } = false;
+        public bool is_verified { get; set; } = false;
 
         [StringLength(50)]
         public string role { get; set; } = "user";
+        public string first_name { get; set; }
+        public string last_name { get; set; }
 
         public DateTime? refresh_token_expiry { get; set; }
 

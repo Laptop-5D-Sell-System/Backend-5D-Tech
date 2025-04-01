@@ -31,9 +31,9 @@ namespace OMS_5D_Tech.Models
 
         public DateTime? updated_at { get; set; }
 
-        public bool? is_active { get; set; } = false;
+        public bool is_active { get; set; } = false;
 
-        public bool? is_verified { get; set; } = false;
+        public bool is_verified { get; set; } = false;
 
         [StringLength(50)]
         public string role { get; set; } = "user";

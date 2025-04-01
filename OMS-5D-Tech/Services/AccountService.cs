@@ -5,10 +5,12 @@ using System.Data.Entity;
 using System.EnterpriseServices.CompensatingResourceManager;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Helpers;
 using System.Web.Http.Results;
@@ -152,6 +154,11 @@ public class AccountService : IAccountService
             return new { httpStatus = HttpStatusCode.NotFound, mess = "Email hoặc mật khẩu không đúng!" };
         }
 
+        if (!account.is_active)
+        {
+            return new { httpStatus = HttpStatusCode.Forbidden, mess = "Tài khoản đã bị khóa!" };
+        }
+
         var token = _jwtService.GenerateToken(account.email, account.id, account.role, account.is_verified, account.is_active);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
@@ -163,7 +170,7 @@ public class AccountService : IAccountService
         await _dbContext.SaveChangesAsync();
 
         var fullname = user.first_name + " " + user.last_name;
-        var data = new { token, refreshToken  , fullname };
+        var data = new { token, refreshToken  , fullname  , account.role};
         return new { HttpStatus = HttpStatusCode.OK, mess = "Đăng nhập thành công!", data } ;
     }
 
@@ -347,7 +354,15 @@ public class AccountService : IAccountService
                 return new { httpStatus = HttpStatusCode.NotFound, mess = "Tài khoản không tồn tại !" };
             }
 
-            if(isAccountExist.is_active)
+            var identity = (ClaimsIdentity)Thread.CurrentPrincipal?.Identity;
+            var currentUserId = int.Parse(identity.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+            if(isAccountExist.id == currentUserId)
+            {
+                return new { httpStatus = HttpStatusCode.BadRequest, mess = "Không thể tự xoá chính bản thân !" };
+            }
+
+            if (isAccountExist.is_active)
             {
                 isAccountExist.is_active = false;
                 await _dbContext.SaveChangesAsync();
@@ -364,6 +379,29 @@ public class AccountService : IAccountService
         catch (Exception ex)
         {
             return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra " + ex.Message };
+        }
+    }
+
+    public async Task<object> LogoutAsync(int accountId)
+    {
+        try
+        {
+            var account = await _dbContext.tbl_Accounts.FindAsync(accountId);
+            if (account == null)
+            {
+                return new { httpStatus = HttpStatusCode.NotFound, mess = "Tài khoản không tồn tại!" };
+            }
+
+            account.refresh_token = null;
+            account.refresh_token_expiry = null; 
+
+            await _dbContext.SaveChangesAsync();
+
+            return new { httpStatus = HttpStatusCode.OK, mess = "Đăng xuất thành công!" };
+        }
+        catch (Exception ex)
+        {
+            return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
         }
     }
 }

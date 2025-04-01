@@ -105,6 +105,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("is-lock")]
+        [CustomAuthorize(Roles ="admin")]
         public async Task<IHttpActionResult> IsLockAccount(int id)
         {
             var result = await _accountService.IsLock(id);

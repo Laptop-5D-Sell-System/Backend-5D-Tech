@@ -25,6 +25,23 @@ namespace OMS_5D_Tech.Filters
                 return;
             }
 
+            var isActiveClaim = user.Claims.FirstOrDefault(c => c.Type == "IsActive")?.Value.ToLower();
+            var isVerify = user.Claims.FirstOrDefault(c => c.Type == "IsVerify")?.Value.ToLower();
+
+            if (isVerify == "false") 
+            {
+                actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
+                    new { httpStatus = 401, mess = "Tài khoản của bạn chưa được kích hoạt. Vui lòng xác thực email!" });
+                return;
+            }
+
+            if (isActiveClaim == "false")
+            {
+                actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized,
+                    new { httpStatus = 401, mess = "Tài khoản của bạn đã bị khoá !" });
+                return;
+            }
+
             if (!string.IsNullOrEmpty(Roles))
             {
                 var userRoles = user.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();

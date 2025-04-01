@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Models;
 using OMS_5D_Tech.Services;
 
@@ -23,6 +24,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("create")]
+        [CustomAuthorize]
         public async Task<IHttpActionResult> CreateReport(tbl_Reports report)
         {
             var result = await _reportService.CreateReportAsync(report);
@@ -39,6 +41,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpDelete]
         [Route("delete")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> DeleteReport(int id)
         {
             var result = await _reportService.DeleteReportAsync(id);
@@ -47,6 +50,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpGet]
         [Route("all-reports")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> GetAllReports()
         {
             var result = await _reportService.GetAllReportsAsync();

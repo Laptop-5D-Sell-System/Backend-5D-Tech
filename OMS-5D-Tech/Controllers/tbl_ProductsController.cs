@@ -6,6 +6,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.SessionState;
 using OMS_5D_Tech.DTOs;
+using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Models;
 using OMS_5D_Tech.Services;
 
@@ -46,6 +47,7 @@ namespace OMS_5D_Tech.Controllers
         }
         [HttpPost]
         [Route("create")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> CreateProduct([FromBody] ProductDTO pro)
         {
             var result = await _productService.CreateProductAsync(pro);
@@ -53,6 +55,7 @@ namespace OMS_5D_Tech.Controllers
         }
         [HttpDelete]
         [Route("delete")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> DeleteProduct(int id)
         {
             var result = await _productService.DeleteProductAsync(id);
@@ -60,6 +63,7 @@ namespace OMS_5D_Tech.Controllers
         }
         [HttpPost]
         [Route("update")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> UpdateProduct([FromBody] ProductDTO pro)
         {
             var result = await _productService.UpdateProductAsync(pro);

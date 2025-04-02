@@ -283,9 +283,11 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\tbl_AccountsController.cs" />
+    <Compile Include="Controllers\tbl_CartController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
     <Compile Include="Controllers\tbl_ReportsController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
+    <Compile Include="DTOs\CartDTO.cs" />
     <Compile Include="DTOs\CategoryDTO.cs" />
     <Compile Include="DTOs\ProductDTO.cs" />
     <Compile Include="DTOs\UserDTO.cs" />
@@ -294,6 +296,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\IAccountService.cs" />
+    <Compile Include="Interfaces\ICartService.cs" />
     <Compile Include="Interfaces\ICategoryService.cs" />
     <Compile Include="Interfaces\IEmailService.cs" />
     <Compile Include="Controllers\tbl_OrderController.cs" />
@@ -301,6 +304,7 @@
     <Compile Include="DTOs\OrderDTO.cs" />
     <Compile Include="Interfaces\IOrderService.cs" />
     <Compile Include="Interfaces\IReportService.cs" />
+    <Compile Include="Services\CartService.cs" />
     <Compile Include="Services\OrderService.cs" />
     <Compile Include="Controllers\tbl_ProductsController.cs" />
     <Compile Include="Interfaces\IProductService.cs" />

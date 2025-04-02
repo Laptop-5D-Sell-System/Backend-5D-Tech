@@ -62,12 +62,10 @@ namespace OMS_5D_Tech.Services
                 if (existingCart != null)
                 {
                     existingCart.quantity += cat.quantity;
-                    product.stock_quantity -= cat.quantity;
                 }
                 else
                 {
                     var newCart = new tbl_Cart { user_id = (int)userId, quantity = cat.quantity, product_id = cat.product_id };
-                    product.stock_quantity -= cat.quantity;
                     _dbContext.tbl_Cart.Add(newCart);
                 }
                 await _dbContext.SaveChangesAsync();
@@ -153,9 +151,7 @@ namespace OMS_5D_Tech.Services
                 var product = await _dbContext.tbl_Products.FindAsync(cat.product_id);
                 if (product == null)
                     return new { HttpStatus = HttpStatusCode.NotFound, mess = "Sản phẩm không tồn tại!" };
-
-
-                product.stock_quantity -= (cat.quantity - cartItem.quantity);              
+                    
                 if(product.stock_quantity < 0)
                 {
                     return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Số lượng sản phẩm lớn hơn số lượng tồn kho !" };

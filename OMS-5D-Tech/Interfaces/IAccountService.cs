@@ -9,8 +9,9 @@ public interface IAccountService
     Task<object> FindAccountByIdAsync(int id);
     Task<object> UpdateAccountAsync(tbl_Accounts acc);
     Task<object> DeleteAccountAsync(int id);
+    Task<object> IsLock(int id);
     Task<object> LoginAsync(string email , string password);
     Task<object> ResetPasswordAsync(string email);
-    Task<object> VerifyEmailAsync(string email);
+    Task<bool> VerifyEmailAsync(string email);
     Task<object> RegisterWithGoogleAsync(string idToken);
 }

@@ -283,21 +283,33 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\tbl_AccountsController.cs" />
+    <Compile Include="Controllers\tbl_CartController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
+    <Compile Include="Controllers\tbl_ReportsController.cs" />
     <Compile Include="Controllers\tbl_OrderController.cs" />
     <Compile Include="Controllers\tbl_UsersController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
-    <Compile Include="DTOs\OrderItemDTO.cs" />
-    <Compile Include="DTOs\OrderDTO.cs" />
+    <Compile Include="DTOs\CartDTO.cs" />
+    <Compile Include="DTOs\CategoryDTO.cs" />
+    <Compile Include="DTOs\ProductDTO.cs" />
     <Compile Include="DTOs\UserDTO.cs" />
     <Compile Include="Filters\CustomAuthorizeAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\IAccountService.cs" />
+    <Compile Include="Interfaces\ICartService.cs" />
     <Compile Include="Interfaces\ICategoryService.cs" />
     <Compile Include="Interfaces\IEmailService.cs" />
+    <Compile Include="Controllers\tbl_OrderController.cs" />
+    <Compile Include="DTOs\OrderItemDTO.cs" />
+    <Compile Include="DTOs\OrderDTO.cs" />
     <Compile Include="Interfaces\IOrderService.cs" />
+    <Compile Include="Interfaces\IReportService.cs" />
+    <Compile Include="Services\CartService.cs" />
+    <Compile Include="Services\OrderService.cs" />
+    <Compile Include="Controllers\tbl_ProductsController.cs" />
+    <Compile Include="Interfaces\IProductService.cs" />
     <Compile Include="Interfaces\IUserService.cs" />
     <Compile Include="Middlewares\JwtMiddleware.cs" />
     <Compile Include="Models\DBContext.cs" />
@@ -317,6 +329,8 @@
     <Compile Include="Services\CategoryService.cs" />
     <Compile Include="Services\EmailService.cs" />
     <Compile Include="Services\JWTService.cs" />
+    <Compile Include="Services\ProductService.cs" />
+    <Compile Include="Services\ReportService.cs" />
     <Compile Include="Services\OrderService.cs" />
     <Compile Include="Services\UserService.cs" />
     <Compile Include="Templates\EmailTitle.cs" />
@@ -345,6 +359,7 @@
     <Folder Include="Validates\" />
     <Folder Include="Views\Default\" />
     <Folder Include="Views\tbl_Order\" />
+    <Folder Include="Views\tbl_Products\" />
     <Folder Include="Views\tbl_Users\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

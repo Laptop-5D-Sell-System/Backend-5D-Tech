@@ -91,11 +91,33 @@ namespace OMS_5D_Tech.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("verify-email")]
         public async Task<IHttpActionResult> VerifyEmail(string email)
         {
             var result = await _accountService.VerifyEmailAsync(email);
+            if (result)
+            {
+                return Ok(new { message = "Kích hoạt tài khoản thành công !" });
+            }
+            return Ok(new { message = "Kích hoạt tài khoản thất bại !" });
+        }
+
+        [HttpPost]
+        [Route("is-lock")]
+        [CustomAuthorize(Roles ="admin")]
+        public async Task<IHttpActionResult> IsLockAccount(int id)
+        {
+            var result = await _accountService.IsLock(id);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        [CustomAuthorize]
+        public async Task<IHttpActionResult> LogOut([FromBody] string refreshToken)
+        {
+            var result = await _accountService.LogoutAsync(refreshToken);
             return Ok(result);
         }
     }

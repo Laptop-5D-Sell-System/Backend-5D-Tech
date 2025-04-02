@@ -11,6 +11,7 @@ public interface IAccountService
     Task<object> DeleteAccountAsync(int id);
     Task<object> IsLock(int id);
     Task<object> LoginAsync(string email , string password);
+    Task<object> LogoutAsync(LogoutDTO dto);
     Task<object> ResetPasswordAsync(string email);
     Task<bool> VerifyEmailAsync(string email);
     Task<object> RegisterWithGoogleAsync(string idToken);

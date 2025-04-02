@@ -115,9 +115,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("logout")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> LogOut([FromBody] string refreshToken)
+        public async Task<IHttpActionResult> LogOut([FromBody] LogoutDTO dto)
         {
-            var result = await _accountService.LogoutAsync(refreshToken);
+            var result = await _accountService.LogoutAsync(dto);
             return Ok(result);
         }
     }

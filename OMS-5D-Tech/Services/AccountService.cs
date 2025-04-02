@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Helpers;
+using System.Web.Http;
 using System.Web.Http.Results;
 using BCrypt.Net;
 using Google.Apis.Auth;
@@ -374,11 +375,11 @@ public class AccountService : IAccountService
         }
     }
 
-    public async Task<object> LogoutAsync(string refreshToken)
+    public async Task<object> LogoutAsync(LogoutDTO dto)
     {
         try
         {
-            var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.refresh_token == refreshToken);
+            var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.refresh_token == dto.refreshToken);
             if (account == null)
             {
                 return new { httpStatus = HttpStatusCode.NotFound, mess = "Tài khoản không tồn tại!" };

@@ -291,6 +291,7 @@
     <Compile Include="DTOs\AccountDTO.cs" />
     <Compile Include="DTOs\CartDTO.cs" />
     <Compile Include="DTOs\CategoryDTO.cs" />
+    <Compile Include="DTOs\LogoutDTO.cs" />
     <Compile Include="DTOs\ProductDTO.cs" />
     <Compile Include="DTOs\UserDTO.cs" />
     <Compile Include="Filters\CustomAuthorizeAttribute.cs" />

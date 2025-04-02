@@ -285,6 +285,7 @@
     <Compile Include="Controllers\tbl_AccountsController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
     <Compile Include="Controllers\tbl_OrderController.cs" />
+    <Compile Include="Controllers\tbl_UsersController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
     <Compile Include="DTOs\OrderItemDTO.cs" />
     <Compile Include="DTOs\OrderDTO.cs" />
@@ -297,6 +298,7 @@
     <Compile Include="Interfaces\ICategoryService.cs" />
     <Compile Include="Interfaces\IEmailService.cs" />
     <Compile Include="Interfaces\IOrderService.cs" />
+    <Compile Include="Interfaces\IUserService.cs" />
     <Compile Include="Middlewares\JwtMiddleware.cs" />
     <Compile Include="Models\DBContext.cs" />
     <Compile Include="Models\tbl_Accounts.cs" />
@@ -316,6 +318,7 @@
     <Compile Include="Services\EmailService.cs" />
     <Compile Include="Services\JWTService.cs" />
     <Compile Include="Services\OrderService.cs" />
+    <Compile Include="Services\UserService.cs" />
     <Compile Include="Templates\EmailTitle.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +345,7 @@
     <Folder Include="Validates\" />
     <Folder Include="Views\Default\" />
     <Folder Include="Views\tbl_Order\" />
+    <Folder Include="Views\tbl_Users\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <PropertyGroup>

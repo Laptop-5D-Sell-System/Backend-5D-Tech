@@ -286,6 +286,8 @@
     <Compile Include="Controllers\tbl_CartController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
     <Compile Include="Controllers\tbl_ReportsController.cs" />
+    <Compile Include="Controllers\tbl_OrderController.cs" />
+    <Compile Include="Controllers\tbl_UsersController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
     <Compile Include="DTOs\CartDTO.cs" />
     <Compile Include="DTOs\CategoryDTO.cs" />
@@ -308,6 +310,7 @@
     <Compile Include="Services\OrderService.cs" />
     <Compile Include="Controllers\tbl_ProductsController.cs" />
     <Compile Include="Interfaces\IProductService.cs" />
+    <Compile Include="Interfaces\IUserService.cs" />
     <Compile Include="Middlewares\JwtMiddleware.cs" />
     <Compile Include="Models\DBContext.cs" />
     <Compile Include="Models\tbl_Accounts.cs" />
@@ -328,6 +331,8 @@
     <Compile Include="Services\JWTService.cs" />
     <Compile Include="Services\ProductService.cs" />
     <Compile Include="Services\ReportService.cs" />
+    <Compile Include="Services\OrderService.cs" />
+    <Compile Include="Services\UserService.cs" />
     <Compile Include="Templates\EmailTitle.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -355,6 +360,7 @@
     <Folder Include="Views\Default\" />
     <Folder Include="Views\tbl_Order\" />
     <Folder Include="Views\tbl_Products\" />
+    <Folder Include="Views\tbl_Users\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <PropertyGroup>

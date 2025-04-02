@@ -42,5 +42,6 @@ namespace OMS_5D_Tech.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tbl_Users> tbl_Users { get; set; }
+
     }
 }

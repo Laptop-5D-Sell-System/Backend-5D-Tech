@@ -22,9 +22,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("create")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> CreateOrder([FromUri] int id, [FromBody] OrderDTO od)
+        public async Task<IHttpActionResult> CreateOrder([FromBody] OrderDTO od)
         {
-            var result = await _orderService.CreateOrderAsync(id , od);
+            var result = await _orderService.CreateOrderAsync(od);
             return Ok(result);
         }
 
@@ -39,6 +39,7 @@ namespace OMS_5D_Tech.Controllers
         
         [HttpPost]
         [Route("cancel")]
+        [CustomAuthorize]
         public async Task<IHttpActionResult> CancelOrderById([FromUri] int id)
         {
             var result = await _orderService.CancelOrderAsync(id);
@@ -49,9 +50,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpGet]
         [Route("my-orders")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> GetMyOrders([FromUri] int id, [FromUri] int? page = 1, [FromUri] int? pageSize = 10)
+        public async Task<IHttpActionResult> GetMyOrders([FromUri] int? page = 1, [FromUri] int? pageSize = 10)
         {
-            var result = await _orderService.GetMyOrders(id, page, pageSize);
+            var result = await _orderService.GetMyOrders(page, pageSize);
             return Ok(result);
         }
 
@@ -66,7 +67,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("update")]
-        [CustomAuthorize]
+        [CustomAuthorize(Roles ="admin")]
         public async Task<IHttpActionResult> UpdateOrder([FromUri]int id, [FromBody]OrderDTO od)
         {
             var result = await _orderService.UpdateOrderAsync(id , od);

@@ -374,20 +374,15 @@ public class AccountService : IAccountService
         }
     }
 
-    public async Task<object> LogoutAsync(int accountId)
+    public async Task<object> LogoutAsync(string refreshToken)
     {
         try
         {
-            var account = await _dbContext.tbl_Accounts.FindAsync(accountId);
+            var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.refresh_token == refreshToken);
             if (account == null)
             {
                 return new { httpStatus = HttpStatusCode.NotFound, mess = "Tài khoản không tồn tại!" };
             }
-
-            account.refresh_token = null;
-            account.refresh_token_expiry = null; 
-
-            await _dbContext.SaveChangesAsync();
 
             return new { httpStatus = HttpStatusCode.OK, mess = "Đăng xuất thành công!" };
         }

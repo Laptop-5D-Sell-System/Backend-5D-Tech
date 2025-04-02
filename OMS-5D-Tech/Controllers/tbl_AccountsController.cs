@@ -111,5 +111,14 @@ namespace OMS_5D_Tech.Controllers
             var result = await _accountService.IsLock(id);
             return Ok(result);
         }
+
+        [HttpPost]
+        [Route("logout")]
+        [CustomAuthorize]
+        public async Task<IHttpActionResult> LogOut([FromBody] string refreshToken)
+        {
+            var result = await _accountService.LogoutAsync(refreshToken);
+            return Ok(result);
+        }
     }
 }

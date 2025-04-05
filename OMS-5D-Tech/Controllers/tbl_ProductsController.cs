@@ -48,7 +48,7 @@ namespace OMS_5D_Tech.Controllers
         }
         [HttpPost]
         [Route("create")]
-        //[CustomAuthorize(Roles = "admin")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> CreateProduct()
         {
             var result = await _productService.CreateProductAsync(HttpContext.Current.Request);

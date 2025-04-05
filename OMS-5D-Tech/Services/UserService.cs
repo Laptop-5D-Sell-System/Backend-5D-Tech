@@ -2,11 +2,14 @@
 using OMS_5D_Tech.Interfaces;
 using OMS_5D_Tech.Models;
 using OMS_5D_Tech.Templates;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -15,12 +18,25 @@ namespace OMS_5D_Tech.Services
     public class UserService : IUserService
     {
         private readonly DBContext _dbContext;
+        private readonly CloudianaryService _cloudianaryService;
 
         public UserService(DBContext dbContext)
         {
             _dbContext = dbContext;
+            _cloudianaryService = new CloudianaryService();
         }
 
+        private async Task<int?> GetCurrentUserIdAsync()
+        {
+            var identity = (ClaimsIdentity)Thread.CurrentPrincipal?.Identity;
+            if (identity == null) return null;
+
+            if (!int.TryParse(identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int accountId))
+                return null;
+
+            var user = await _dbContext.tbl_Users.FirstOrDefaultAsync(u => u.account_id == accountId);
+            return user?.id;
+        }
         public async Task<object> DeleteUserAsync(int id)
         {
             try
@@ -123,28 +139,52 @@ namespace OMS_5D_Tech.Services
             return new { httpStatus = HttpStatusCode.OK, mess = "Danh sách toàn bộ người dùng", users = users };
         }
 
-        public async Task<object> UpdateUserAsync(tbl_Users user)
+        public async Task<object> UpdateUserAsync(HttpRequest request)
         {
             try
             {
-                var existingUser = await _dbContext.tbl_Users.FindAsync(user.id);
+                var userId = await GetCurrentUserIdAsync();
+                var existingUser = await _dbContext.tbl_Users.FindAsync(userId);
+
                 if (existingUser == null)
                 {
                     return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy người dùng!" };
                 }
 
-                
-                if (user.last_name != null) existingUser.last_name = user.last_name;
-                if (user.first_name != null) existingUser.first_name = user.first_name;
-                if (user.dob != null) existingUser.dob = user.dob;
-                if (user.phone_number != null) existingUser.phone_number = user.phone_number;
-                if (user.address != null) existingUser.address = user.address;
-                if (user.profile_picture != null) existingUser.profile_picture = user.profile_picture;
-                existingUser.updated_at = DateTime.Now;
+                var first_name = request.Form["first_name"];
+                var last_name = request.Form["last_name"]; 
+                var dob = request.Form["dob"];
+                var phone_number = request.Form["phone_number"];
+                var address = request.Form["address"];
 
+                if (!string.IsNullOrEmpty(first_name))
+                    existingUser.first_name = first_name;
+
+                if (!string.IsNullOrEmpty(last_name))
+                    existingUser.last_name = last_name;
+
+                if (!string.IsNullOrEmpty(dob) && DateTime.TryParse(dob, out DateTime parsedDob))
+                    existingUser.dob = parsedDob;
+
+                if (!string.IsNullOrEmpty(phone_number))
+                    existingUser.phone_number = phone_number;
+
+                if (!string.IsNullOrEmpty(address))
+                    existingUser.address = address;
+
+                if (request.Files.Count > 0)
+                {
+                    var imageFile = request.Files["profile_picture"];
+                    if (imageFile != null && imageFile.ContentLength > 0)
+                    {
+                        var imageUrl = _cloudianaryService.UploadImage(imageFile);
+                        existingUser.profile_picture = imageUrl;
+                    }
+                }
+
+                existingUser.updated_at = DateTime.Now;
                 await _dbContext.SaveChangesAsync();
 
-                
                 var userDto = new UserDTO
                 {
                     id = existingUser.id,

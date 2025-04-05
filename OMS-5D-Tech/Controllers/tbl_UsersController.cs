@@ -39,6 +39,14 @@ namespace OMS_5D_Tech.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        [Route("my-information")]
+        [CustomAuthorize]
+        public async Task<IHttpActionResult> GetMyInformation()
+        {
+            var result = await _userService.GetMyInfor();
+            return Ok(result);
+        }
 
         [HttpPost]
         [Route("edit-user")]

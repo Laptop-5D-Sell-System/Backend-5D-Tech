@@ -2,20 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
-using System.EnterpriseServices.CompensatingResourceManager;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Security.Policy;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Helpers;
-using System.Web.Http;
-using System.Web.Http.Results;
-using BCrypt.Net;
 using Google.Apis.Auth;
 using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Models;
@@ -84,7 +77,7 @@ public class AccountService : IAccountService
             emailService.SendEmail(account.email, "Xác thực đăng ký", emailTitle.SendVerifyEmail(account.email));
 
             // Tạo token
-            var token = _jwtService.GenerateToken(account.email, account.id , account.role , account.is_verified , account.is_active);
+            var token = _jwtService.GenerateToken(account.email, account.id , account.role , account.is_verified);
 
             var accountInfo = new
             {
@@ -131,7 +124,7 @@ public class AccountService : IAccountService
                 await _dbContext.SaveChangesAsync();
             }
 
-            var accessToken = _jwtService.GenerateToken(user.email, user.id, user.role , user.is_verified, user.is_active);
+            var accessToken = _jwtService.GenerateToken(user.email, user.id, user.role , user.is_verified);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
             user.refresh_token = refreshToken;
@@ -160,7 +153,12 @@ public class AccountService : IAccountService
             return new { httpStatus = HttpStatusCode.Forbidden, mess = "Tài khoản đã bị khóa!" };
         }
 
-        var token = _jwtService.GenerateToken(account.email, account.id, account.role, account.is_verified, account.is_active);
+        if (!account.is_verified)
+        {
+            return new { httpStatus = HttpStatusCode.Forbidden, mess = "Tài khoản chưa xác thực email !" };
+        }
+
+        var token = _jwtService.GenerateToken(account.email, account.id, account.role, account.is_verified);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         account.refresh_token = refreshToken;
@@ -338,7 +336,15 @@ public class AccountService : IAccountService
             account.refresh_token_expiry,
             id_user = _dbContext.tbl_Users
                 .Where(user => user.account_id == account.id)
-                .Select(user => user.id)
+                .Select(user => new
+                {
+                    user.id,
+                    user.phone_number,
+                    user.profile_picture,
+                    full_name = user.first_name + " " + user.last_name,
+                    user.address,
+                    user.dob,
+                })
                 .FirstOrDefault()
         }).ToListAsync();
 
@@ -377,19 +383,42 @@ public class AccountService : IAccountService
 
     public async Task<object> LogoutAsync(LogoutDTO dto)
     {
+        if (dto == null || string.IsNullOrEmpty(dto.refreshToken))
+        {
+            return new
+            {
+                httpStatus = 400,
+                message = "Không nhận được refresh token!"
+            };
+        }
+
         try
         {
             var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.refresh_token == dto.refreshToken);
+
             if (account == null)
             {
-                return new { httpStatus = HttpStatusCode.NotFound, mess = "Tài khoản không tồn tại!" };
+                return new
+                {
+                    httpStatus = 404,
+                    message = "Tài khoản không tồn tại!"
+                };
             }
 
-            return new { httpStatus = HttpStatusCode.OK, mess = "Đăng xuất thành công!" };
+            return new
+            {
+                httpStatus = 200,
+                message = "Đăng xuất thành công!"
+            };
         }
         catch (Exception ex)
         {
-            return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
+            return new
+            {
+                httpStatus = 500,
+                message = "Có lỗi xảy ra",
+                detail = ex.Message
+            };
         }
     }
 }

@@ -15,5 +15,6 @@ namespace OMS_5D_Tech.Interfaces
         Task<object> FindUserByIdAsync(int id);
         Task<object> UpdateUserAsync(HttpRequest request);
         Task<object> DeleteUserAsync(int id);
+        Task<object> GetMyInfor();
     }
 }

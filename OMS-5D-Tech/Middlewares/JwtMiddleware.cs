@@ -33,9 +33,19 @@ namespace OMS_5D_Tech.Middlewares
 
                 if (principal?.Identity is ClaimsIdentity identity && identity.IsAuthenticated)
                 {
+                    var isVerify = identity.Claims.FirstOrDefault(c => c.Type == "IsVerify")?.Value;
+
+                    if (isVerify != null && isVerify.ToLower() == "false")
+                    {
+                        context.Response.StatusCode = 401;
+                        await context.Response.WriteAsync("Tài khoản chưa xác thực email!");
+                        return;
+                    }
+
                     var claims = new ClaimsIdentity(identity.Claims, "jwt");
                     context.Request.User = new ClaimsPrincipal(claims);
                 }
+
             }
             catch (SecurityTokenExpiredException)
             {

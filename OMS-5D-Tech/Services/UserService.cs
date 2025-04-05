@@ -108,6 +108,43 @@ namespace OMS_5D_Tech.Services
         }
 
 
+        public async Task<object> GetMyInfor()
+        {
+            var userId = await GetCurrentUserIdAsync();
+
+            var user = await _dbContext.tbl_Users
+                .Where(_ => _.id == userId)
+                .Select(_ => new
+                {
+                    _.id,
+                    _.account_id,
+                    full_name = _.first_name + " " + _.last_name,
+                    _.phone_number,
+                    _.address,
+                    _.dob,
+                    _.profile_picture,
+                    account = _dbContext.tbl_Accounts
+                        .Where(acc => acc.id == _.account_id)
+                        .Select(acc => new
+                        {
+                            acc.id,
+                            acc.email,
+                            acc.is_active,
+                            acc.is_verified,
+                            acc.role,
+                            acc.created_at,
+                            acc.updated_at
+                        }).FirstOrDefault()
+                }).FirstOrDefaultAsync();
+
+            if (user != null)
+            {
+                return new { httpStatus = HttpStatusCode.OK, mess = "Lấy thông tin người dùng thành công!", user = user };
+            }
+
+            return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy người dùng!" };
+        }
+
         public async Task<object> GetUser()
         {
             var users = await _dbContext.tbl_Users

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace OMS_5D_Tech.DTOs
 
         [Required]
         [StringLength(255)]
-        public string product_image { get; set; }
+        public HttpPostedFileBase product_image { get; set; }
 
         public int stock_quantity { get; set; }
 

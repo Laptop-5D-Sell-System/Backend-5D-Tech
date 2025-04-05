@@ -144,7 +144,7 @@ namespace OMS_5D_Tech.Services
                     created_at = check.created_at,
                     updated_at = check.updated_at,
                     description = check.description,
-                    //product_image = check.product_image,
+                    product_image = check.product_image,
                     price = check.price,
                     category_id = check.category_id,
                     stock_quantity = check.stock_quantity,

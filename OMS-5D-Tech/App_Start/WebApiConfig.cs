@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using System.Web.Http;
+using System.Net.Http.Formatting;
 using System.Web.Http.Cors;
 using EnableCorsAttribute = System.Web.Http.Cors.EnableCorsAttribute;
 

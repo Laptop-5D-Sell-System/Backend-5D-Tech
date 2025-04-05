@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -47,10 +48,10 @@ namespace OMS_5D_Tech.Controllers
         }
         [HttpPost]
         [Route("create")]
-        [CustomAuthorize(Roles = "admin")]
-        public async Task<IHttpActionResult> CreateProduct([FromBody] ProductDTO pro)
+        //[CustomAuthorize(Roles = "admin")]
+        public async Task<IHttpActionResult> CreateProduct()
         {
-            var result = await _productService.CreateProductAsync(pro);
+            var result = await _productService.CreateProductAsync(HttpContext.Current.Request);
             return Ok(result);
         }
         [HttpDelete]
@@ -64,9 +65,10 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("update")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<IHttpActionResult> UpdateProduct([FromBody] ProductDTO pro)
+        public async Task<IHttpActionResult> UpdateProduct(int id)
         {
-            var result = await _productService.UpdateProductAsync(pro);
+            var request = HttpContext.Current.Request;
+            var result = await _productService.UpdateProductAsync(id, request);
             return Ok(result);
         }
     }

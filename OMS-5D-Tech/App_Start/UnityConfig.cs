@@ -2,6 +2,7 @@ using System.Web.Mvc;
 using OMS_5D_Tech.Interfaces;
 using OMS_5D_Tech.Services;
 using Unity;
+using Unity.Lifetime;
 using Unity.Mvc5;
 
 namespace OMS_5D_Tech
@@ -20,7 +21,7 @@ namespace OMS_5D_Tech
             container.RegisterType<ICategoryService, CategoryService>();
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IOrderService, OrderService>();
-            container.RegisterType<IProductService, ProductService>();
+            container.RegisterType<IProductService, ProductService>(new HierarchicalLifetimeManager());
             container.RegisterType<IReportService, ReportService>();
             container.RegisterType<ICartService, CartService>();
             DependencyResolver.SetResolver(new UnityDependencyResolver(container));

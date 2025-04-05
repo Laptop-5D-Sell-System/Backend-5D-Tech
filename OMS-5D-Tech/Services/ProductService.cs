@@ -15,42 +15,64 @@ namespace OMS_5D_Tech.Services
 {
     public class ProductService : IProductService
     {
-        public readonly DBContext _dbContext;
+        private readonly DBContext _dbContext;
+        private readonly CloudianaryService _cloudinaryService;
         public ProductService(DBContext dbContext)
         {
             _dbContext = dbContext;
+            _cloudinaryService = new CloudianaryService();
         }
 
-        public async Task<object> CreateProductAsync(ProductDTO pro)
+        public async Task<object> CreateProductAsync(HttpRequest request)
         {
             try
             {
-                var check = await _dbContext.tbl_Products.FirstOrDefaultAsync(_ => _.name == pro.name);
-                var checkCat = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.id == pro.category_id);
+                var name = request.Form["name"];
+                var description = request.Form["description"];
+                var price = Convert.ToDecimal(request.Form["price"]);
+                var stockQuantity = Convert.ToInt32(request.Form["stock_quantity"]);
+                var categoryId = string.IsNullOrEmpty(request.Form["category_id"]) ? (int?)null : Convert.ToInt32(request.Form["category_id"]);
+
+                var checkCat = await _dbContext.tbl_Categories.FindAsync(categoryId);
                 if (checkCat == null)
-                    pro.category_id = null;
-                if(check != null) 
-                    return new { httpStatus = HttpStatusCode.BadRequest, mess = "Đã tồn tại sản phẩm !" };
+                    categoryId = null;
+
+                var check = await _dbContext.tbl_Products.FirstOrDefaultAsync(p => p.name == name);
+                if (check != null)
+                    return new { httpStatus = HttpStatusCode.BadRequest, mess = "Sản phẩm đã tồn tại!" };
+
+                string imageUrl = null;
+                if (request.Files.Count > 0)
+                {
+                    HttpPostedFile imageFile = request.Files["product_image"]; 
+                    if (imageFile != null && imageFile.ContentLength > 0)
+                    {
+                        imageUrl = _cloudinaryService.UploadImage(imageFile);
+                    }
+                }
 
                 var product = new tbl_Products
                 {
-                    name = pro.name,
-                    description = pro.description,
-                    price = pro.price,
-                    product_image = pro.product_image,
-                    stock_quantity = pro.stock_quantity,
-                    category_id = pro.category_id,
+                    name = name,
+                    description = description,
+                    price = price,
+                    product_image = imageUrl,
+                    stock_quantity = stockQuantity,
+                    category_id = categoryId,
                     created_at = DateTime.Now
                 };
+
                 _dbContext.tbl_Products.Add(product);
                 await _dbContext.SaveChangesAsync();
-                return new { httpStatus = HttpStatusCode.Created, mess = "Tạo sản phẩm thành công !" };
 
-            }catch(Exception ex)
+                return new { httpStatus = HttpStatusCode.Created, mess = "Tạo sản phẩm thành công!" };
+            }
+            catch (Exception ex)
             {
-                return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
+                return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi: " + ex.Message };
             }
         }
+
 
         public async Task<object> DeleteProductAsync(int id)
         {
@@ -122,7 +144,7 @@ namespace OMS_5D_Tech.Services
                     created_at = check.created_at,
                     updated_at = check.updated_at,
                     description = check.description,
-                    product_image = check.product_image,
+                    //product_image = check.product_image,
                     price = check.price,
                     category_id = check.category_id,
                     stock_quantity = check.stock_quantity,
@@ -172,47 +194,57 @@ namespace OMS_5D_Tech.Services
                 return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
             }
         }
-
-        public async Task<object> UpdateProductAsync(ProductDTO pro)
+        public async Task<object> UpdateProductAsync(int id, HttpRequest request)
         {
             try
             {
-                var check = await _dbContext.tbl_Products.FirstOrDefaultAsync(_ => _.id == pro.id);
+                var check = await _dbContext.tbl_Products.FirstOrDefaultAsync(_ => _.id == id);
                 if (check == null)
                     return new { httpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy sản phẩm !" };
-                // Check tên sản phẩm đã tồn tại
-                var checkName = await _dbContext.tbl_Products.FirstOrDefaultAsync(_ => _.name == pro.name);
+
+                var name = request.Form["name"];
+                var description = request.Form["description"];
+                var priceStr = request.Form["price"];
+                var stockQuantityStr = request.Form["stock_quantity"];
+                var categoryIdStr = request.Form["category_id"];
+                var imageFile = request.Files["product_image"];
+
+                var checkName = await _dbContext.tbl_Products
+                    .FirstOrDefaultAsync(_ => _.name == name && _.id != id);
                 if (checkName != null)
                     return new { httpStatus = HttpStatusCode.BadRequest, mess = "Tên sản phẩm đã tồn tại !" };
-                // Check các fields k fill -> Lấy cũ
-                check.name = pro.name ?? check.name;
-                check.description = pro.description ?? check.description;
-                check.product_image = pro.product_image ?? check.product_image;
-                check.category_id = pro.category_id ?? check.category_id;
-                if(pro.price != 0)
-                    check.price = pro.price;
-                if (pro.stock_quantity != 0)
-                    check.stock_quantity = pro.stock_quantity;
-                
+
+                check.name = string.IsNullOrEmpty(name) ? check.name : name;
+                check.description = string.IsNullOrEmpty(description) ? check.description : description;
+
+                if (decimal.TryParse(priceStr, out var price))
+                {
+                    check.price = price;
+                }
+
+                if (int.TryParse(stockQuantityStr, out var stockQuantity))
+                {
+                    check.stock_quantity = stockQuantity;
+                }
+
+                if (int.TryParse(categoryIdStr, out var categoryId))
+                {
+                    var checkCat = await _dbContext.tbl_Categories.FirstOrDefaultAsync(_ => _.id == categoryId);
+                    if (checkCat != null)
+                        check.category_id = categoryId;
+                }
+
+                if (imageFile != null && imageFile.ContentLength > 0)
+                {
+                    check.product_image = _cloudinaryService.UploadImage(imageFile);
+                }
+
                 check.updated_at = DateTime.Now;
                 await _dbContext.SaveChangesAsync();
 
-                var updatedProduct = new ProductDTO
-                {
-                    id = check.id,
-                    name = check.name,
-                    description = check.description,
-                    product_image = check.product_image,
-                    category_id = check.category_id,
-                    price = check.price,
-                    stock_quantity = check.stock_quantity,
-                    updated_at = check.updated_at,
-                    created_at = check.created_at
-                };
-
-                return new { httpStatus = HttpStatusCode.OK, mess = "Sửa sản phẩm thành công !", product = updatedProduct };
-
-            }catch(Exception ex)
+                return new { httpStatus = HttpStatusCode.OK, mess = "Sửa sản phẩm thành công !" };
+            }
+            catch (Exception ex)
             {
                 return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
             }

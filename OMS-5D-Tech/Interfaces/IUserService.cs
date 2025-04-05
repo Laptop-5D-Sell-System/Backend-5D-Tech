@@ -1,4 +1,5 @@
-﻿using OMS_5D_Tech.DTOs;
+﻿using System.Web;
+using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Models;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace OMS_5D_Tech.Interfaces
     {
         Task<object> GetUser();
         Task<object> FindUserByIdAsync(int id);
-        Task<object> UpdateUserAsync(tbl_Users user);
+        Task<object> UpdateUserAsync(HttpRequest request);
         Task<object> DeleteUserAsync(int id);
     }
 }

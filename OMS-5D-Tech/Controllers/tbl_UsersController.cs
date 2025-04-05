@@ -43,9 +43,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("edit-user")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> UpdateAccount(tbl_Users user)
+        public async Task<IHttpActionResult> UpdateAccount()
         {
-            var result = await _userService.UpdateUserAsync(user);
+            var result = await _userService.UpdateUserAsync(HttpContext.Current.Request);
             return Ok(result);
         }
 

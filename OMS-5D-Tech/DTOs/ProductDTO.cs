@@ -21,7 +21,7 @@ namespace OMS_5D_Tech.DTOs
 
         [Required]
         [StringLength(255)]
-        public HttpPostedFileBase product_image { get; set; }
+        public string product_image { get; set; }
 
         public int stock_quantity { get; set; }
 

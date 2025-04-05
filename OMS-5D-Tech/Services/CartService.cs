@@ -188,6 +188,7 @@ namespace OMS_5D_Tech.Services
                         c.product_id,
                         product_name = c.tbl_Products.name,
                         product_price = c.tbl_Products.price,
+                        product_image = c.tbl_Products.product_image,
                         c.quantity
                     })
                     .ToListAsync();

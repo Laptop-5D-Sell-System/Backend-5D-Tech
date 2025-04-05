@@ -62,7 +62,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpDelete]
         [Route("delete")]
-        [CustomAuthorize(Roles ="admin")]
+        [CustomAuthorize]
         public async Task<IHttpActionResult> DeleteCart(int id)
         {
             var result = await _cartService.DeleteCartAsync(id);

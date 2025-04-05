@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OMS_5D_Tech.DTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -38,34 +39,33 @@ namespace OMS_5D_Tech.Templates
             return text;
         }
 
-        public string SendVerifyOrderEmail(string fullname, string orderId, string orderDate, List<string> products, decimal totalPrice)
+        public string SendVerifyOrderEmail(string email, string orderId, string orderDate, string formattedItemsTable, decimal total)
         {
-            string productListHtml = "";
-            foreach (var product in products)
-            {
-                productListHtml += $"<li>{product}</li>";
-            }
+            return $@"
+                <div style='font-family: Arial, sans-serif;'>
+                    <h2 style='color: #0073e6;'>5D-Tech Laptop Shop System</h2>
+                    <p>Xin chào, {email},</p>
+                    <p>Cảm ơn bạn đã đặt hàng tại 5D-Tech.</p>
 
-            string text = $@"
-                <h1>5D-Tech Laptop Shop System</h1>
-                <p>Xin chào, <strong>{fullname}</strong>,</p>
-                <p>Cảm ơn bạn đã đặt hàng tại <strong>5D-Tech</strong>.</p>
-                <p>Thông tin đơn hàng của bạn:</p>
-                <ul>
-                    <li><strong>Mã đơn hàng:</strong> {orderId}</li>
-                    <li><strong>Ngày đặt hàng:</strong> {orderDate}</li>
-                    <li><strong>Sản phẩm:</strong></li>
-                    <ul>{productListHtml}</ul>
-                    <li><strong>Tổng tiền:</strong> {totalPrice:C}</li>
-                </ul>
-                <p>Để kiểm tra trạng thái đơn hàng, vui lòng nhấn vào liên kết: <a href='https://5dtech.com/orders/{orderId}'>Xem đơn hàng</a></p>
-                <br>
-                <p>Nếu bạn không thực hiện giao dịch này, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
-                <p>Trân trọng,</p>
-                <p><strong>5D-Tech Laptop Shop System</strong></p>";
+                    <p><strong>Thông tin đơn hàng của bạn:</strong></p>
+                    <ul>
+                        <li><strong>Mã đơn hàng:</strong> {orderId}</li>
+                        <li><strong>Ngày đặt hàng:</strong> {orderDate}</li>
+                    </ul>
 
-            return text;
+                    {formattedItemsTable}
+
+                    <p><strong>Tổng tiền:</strong> {total:C}</p>
+
+                    <p>Để kiểm tra trạng thái đơn hàng, vui lòng nhấn vào liên kết: <a href='#'>Xem đơn hàng</a></p>
+
+                    <p>Nếu bạn không thực hiện giao dịch này, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
+
+                    <p style='margin-top:30px;'>Trân trọng,<br/>5D-Tech Laptop Shop System</p>
+                </div>
+            ";
         }
+
 
     }
 }

@@ -152,7 +152,7 @@ namespace OMS_5D_Tech.Services
                 if (product == null)
                     return new { HttpStatus = HttpStatusCode.NotFound, mess = "Sản phẩm không tồn tại!" };
                     
-                if(product.stock_quantity < 0)
+                if(cat.quantity > product.stock_quantity)
                 {
                     return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Số lượng sản phẩm lớn hơn số lượng tồn kho !" };
                 }

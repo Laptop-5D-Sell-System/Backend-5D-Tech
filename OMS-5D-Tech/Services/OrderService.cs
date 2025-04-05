@@ -5,12 +5,14 @@ using OMS_5D_Tech.Templates;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Helpers;
 using System.Xml.Linq;
 
 namespace OMS_5D_Tech.Services
@@ -18,9 +20,11 @@ namespace OMS_5D_Tech.Services
     public class OrderService : IOrderService
     {
         private readonly DBContext _dbContext;
+        private readonly EmailTitle _emailTitle;
 
         public OrderService(DBContext dbContext)
         {
+            _emailTitle = new EmailTitle();
             _dbContext = dbContext;
         }
 
@@ -105,15 +109,60 @@ namespace OMS_5D_Tech.Services
                         product.stock_quantity -= item.quantity;
                     }
 
+                    var culture = new CultureInfo("vi-VN");
+                    var productInfoFormatted = @"
+                        <table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%;'>
+                            <thead style='background-color: #f2f2f2;'>
+                                <tr>
+                                    <th style='text-align:left;'>Tên sản phẩm</th>
+                                    <th style='text-align:right;'>Số lượng</th>
+                                    <th style='text-align:right;'>Đơn giá</th>
+                                    <th style='text-align:right;'>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>";
+                            foreach (var item in orderItems)
+                            {
+                                var product = existingProducts[item.product_id ?? 0];
+                                var subtotal = product.price * item.quantity;
+                                productInfoFormatted += $@"
+                                <tr>
+                                    <td>{product.name}</td>
+                                    <td style='text-align:right;'>{item.quantity}</td>
+                                    <td style='text-align:right;'>{product.price.ToString("N0", culture)} ₫</td>
+                                    <td style='text-align:right;'>{subtotal.ToString("N0", culture)} ₫</td>
+                                </tr>";
+                            }
+                            productInfoFormatted += @"
+                            </tbody>
+                        </table>";
+
                     _dbContext.tbl_Order_Items.AddRange(orderItems);
                     await _dbContext.SaveChangesAsync();
 
                     newOrder.total = totalAmount;
                     await _dbContext.SaveChangesAsync();
 
+                    var user = await _dbContext.tbl_Users.FirstOrDefaultAsync(_ => _.id == userId);
+                    var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.id == user.account_id);
+
+                    var emailService = new EmailService();
+
+                    emailService.SendEmail(
+                        account.email,
+                        "Xác nhận đơn hàng",
+                        _emailTitle.SendVerifyOrderEmail(
+                            account.email,
+                            newOrder.id.ToString(),
+                            newOrder.order_date.ToString(),
+                            productInfoFormatted,
+                            newOrder.total
+                        )
+                    );
+
                     transaction.Commit();
 
-                    return new { HttpStatus = HttpStatusCode.Created, mess = "Đặt hàng thành công!", OrderId = newOrder.id };
+                    return new { HttpStatus = HttpStatusCode.Created, mess = "Đặt hàng thành công , vui lòng kiểm tra hòm thư của bạn", OrderId = newOrder.id };
                 }
                 catch (Exception ex)
                 {
@@ -122,7 +171,6 @@ namespace OMS_5D_Tech.Services
                 }
             }
         }
-
 
         public async Task<object> DeleteOrderAsync(int id)
         {
@@ -217,6 +265,10 @@ namespace OMS_5D_Tech.Services
                     return new { HttpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy đơn hàng!" };
                 }
 
+                var orderItem = await _dbContext.tbl_Orders
+                       .Include(o => o.tbl_Order_Items)
+                       .FirstOrDefaultAsync(o => o.id == id);
+
                 var order = await _dbContext.tbl_Orders
                 .Where(o => o.id == id)
                 .Select(o => new
@@ -236,6 +288,14 @@ namespace OMS_5D_Tech.Services
                     return new { HttpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy đơn hàng!" };
                 }
 
+                var productList = orderItem.tbl_Order_Items
+                    .Select(oi => new
+                    {
+                        ProductName = oi.tbl_Products.name,
+                        Quantity = oi.quantity
+                    })
+                    .ToList();
+
                 return new
                 {
                     HttpStatus = HttpStatusCode.OK,
@@ -245,8 +305,9 @@ namespace OMS_5D_Tech.Services
                         order.user_id,
                         order.order_date,
                         order.status,
+                        products = productList,
+                        total_quantity = totalQuantity,
                         order.total,
-                        quantity = totalQuantity
                     }
                 };
 

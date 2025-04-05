@@ -30,7 +30,6 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpGet]
         [Route("detail")]
-        [CustomAuthorize(Roles ="admin")]
         public async Task<IHttpActionResult> FindOrderById([FromUri] int id)
         {
             var result = await _orderService.FindOrderByIdAsync(id);

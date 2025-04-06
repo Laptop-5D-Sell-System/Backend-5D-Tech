@@ -47,22 +47,36 @@ namespace OMS_5D_Tech.Services
             {
                 try
                 {
+                    // Kiểm tra người dùng đã đăng nhập chưa
                     var userId = await GetCurrentUserIdAsync();
                     if (userId == null)
                         return new { HttpStatus = HttpStatusCode.Unauthorized, mess = "Vui lòng đăng nhập!" };
 
+                    if (od.OrderItems == null || !od.OrderItems.Any())
+                    {
+                        return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Không có sản phẩm nào trong đơn hàng." };
+                    }
+
+                    // Lấy các sản phẩm từ yêu cầu
                     var productIds = od.OrderItems.Select(i => i.product_id).ToList();
 
+                    // Lấy các sản phẩm từ database dựa trên product_id
                     var existingProducts = await _dbContext.tbl_Products
                         .Where(p => productIds.Contains(p.id))
                         .ToDictionaryAsync(p => p.id, p => p);
 
-                    var missingProducts = productIds.Where(p => p.HasValue).Select(p => p.Value).Except(existingProducts.Keys).ToList();
+                    // Kiểm tra các sản phẩm không tồn tại trong database
+                    var missingProducts = productIds
+                        .Where(p => p.HasValue)             
+                        .Select(p => p.Value)                  
+                        .Except(existingProducts.Keys)         
+                        .ToList();
                     if (missingProducts.Any())
                     {
                         return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Sản phẩm ID {string.Join(", ", missingProducts)} không tồn tại." };
                     }
 
+                    // Kiểm tra số lượng sản phẩm hợp lệ
                     foreach (var item in od.OrderItems)
                     {
                         if (item.quantity <= 0)
@@ -77,6 +91,7 @@ namespace OMS_5D_Tech.Services
                         }
                     }
 
+                    // Tạo đơn hàng mới
                     var newOrder = new tbl_Orders
                     {
                         user_id = userId,
@@ -85,9 +100,11 @@ namespace OMS_5D_Tech.Services
                         total = 0
                     };
 
+                    // Thêm đơn hàng vào database
                     _dbContext.tbl_Orders.Add(newOrder);
                     await _dbContext.SaveChangesAsync();
 
+                    // Danh sách các mục trong đơn hàng và tổng tiền
                     List<tbl_Order_Items> orderItems = new List<tbl_Order_Items>();
                     decimal totalAmount = 0;
 
@@ -98,17 +115,20 @@ namespace OMS_5D_Tech.Services
                         var subtotal = price * item.quantity;
                         totalAmount += subtotal;
 
+                        // Thêm item vào danh sách orderItems
                         orderItems.Add(new tbl_Order_Items
                         {
-                            order_id = newOrder.id,
-                            product_id = item.product_id,
+                            order_id = newOrder.id,  // ID đơn hàng được tạo khi lưu
+                            product_id = item.product_id ?? 0,
                             quantity = item.quantity,
                             price = price
                         });
 
+                        // Cập nhật lại số lượng tồn kho sản phẩm
                         product.stock_quantity -= item.quantity;
                     }
 
+                    // Cập nhật thông tin email với các sản phẩm trong đơn hàng
                     var culture = new CultureInfo("vi-VN");
                     var productInfoFormatted = @"
                         <table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%;'>
@@ -121,33 +141,39 @@ namespace OMS_5D_Tech.Services
                                 </tr>
                             </thead>
                             <tbody>";
+
                             foreach (var item in orderItems)
                             {
                                 var product = existingProducts[item.product_id ?? 0];
                                 var subtotal = product.price * item.quantity;
                                 productInfoFormatted += $@"
-                                <tr>
-                                    <td>{product.name}</td>
-                                    <td style='text-align:right;'>{item.quantity}</td>
-                                    <td style='text-align:right;'>{product.price.ToString("N0", culture)} ₫</td>
-                                    <td style='text-align:right;'>{subtotal.ToString("N0", culture)} ₫</td>
-                                </tr>";
+                                    <tr>
+                                        <td>{product.name}</td>
+                                        <td style='text-align:right;'>{item.quantity}</td>
+                                        <td style='text-align:right;'>{product.price.ToString("N0", culture)} ₫</td>
+                                        <td style='text-align:right;'>{subtotal.ToString("N0", culture)} ₫</td>
+                                    </tr>";
                             }
+
                             productInfoFormatted += @"
                             </tbody>
                         </table>";
 
+                    // Lưu các mục trong đơn hàng vào database
                     _dbContext.tbl_Order_Items.AddRange(orderItems);
                     await _dbContext.SaveChangesAsync();
 
+                    // Cập nhật tổng tiền cho đơn hàng
                     newOrder.total = totalAmount;
                     await _dbContext.SaveChangesAsync();
 
+                    // Lấy thông tin người dùng và tài khoản để gửi email xác nhận
                     var user = await _dbContext.tbl_Users.FirstOrDefaultAsync(_ => _.id == userId);
                     var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.id == user.account_id);
 
                     var emailService = new EmailService();
 
+                    // Gửi email xác nhận đơn hàng
                     emailService.SendEmail(
                         account.email,
                         "Xác nhận đơn hàng",
@@ -160,12 +186,15 @@ namespace OMS_5D_Tech.Services
                         )
                     );
 
+                    // Cam kết giao dịch
                     transaction.Commit();
 
-                    return new { HttpStatus = HttpStatusCode.Created, mess = "Đặt hàng thành công , vui lòng kiểm tra hòm thư của bạn", OrderId = newOrder.id };
+                    // Trả về kết quả thành công
+                    return new { HttpStatus = HttpStatusCode.Created, mess = "Đặt hàng thành công, vui lòng kiểm tra hòm thư của bạn", OrderId = newOrder.id };
                 }
                 catch (Exception ex)
                 {
+                    // Rollback nếu có lỗi xảy ra
                     transaction.Rollback();
                     return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
                 }

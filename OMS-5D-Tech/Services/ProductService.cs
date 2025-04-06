@@ -106,9 +106,9 @@ namespace OMS_5D_Tech.Services
                     product.product_image,
                     product.price,
                     product.stock_quantity,
-                    category_id = _dbContext.tbl_Categories
+                    category_name = _dbContext.tbl_Categories
                         .Where(cat => cat.id == product.category_id)
-                        .Select(cat => cat.id)
+                        .Select(cat => cat.name)
                         .FirstOrDefault()
                 });
                 // Sort by price 

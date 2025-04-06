@@ -32,7 +32,7 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpGet]
         [Route("detail")]
-        [CustomAuthorize(Roles = "admin")]
+        [CustomAuthorize]
         public async Task<IHttpActionResult> FindUserByID(int id)
         {
             var result = await _userService.FindUserByIdAsync(id);

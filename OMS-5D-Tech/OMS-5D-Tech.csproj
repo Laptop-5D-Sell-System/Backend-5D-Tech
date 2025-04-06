@@ -333,6 +333,7 @@
     <Compile Include="Controllers\tbl_AccountsController.cs" />
     <Compile Include="Controllers\tbl_CartController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
+    <Compile Include="Controllers\tbl_OrderItemsController.cs" />
     <Compile Include="Controllers\tbl_ReportsController.cs" />
     <Compile Include="Controllers\tbl_OrderController.cs" />
     <Compile Include="Controllers\tbl_UsersController.cs" />
@@ -353,10 +354,12 @@
     <Compile Include="Controllers\tbl_OrderController.cs" />
     <Compile Include="DTOs\OrderItemDTO.cs" />
     <Compile Include="DTOs\OrderDTO.cs" />
+    <Compile Include="Interfaces\IOrderItemService.cs" />
     <Compile Include="Interfaces\IOrderService.cs" />
     <Compile Include="Interfaces\IReportService.cs" />
     <Compile Include="Services\CartService.cs" />
     <Compile Include="Services\CloudianaryService.cs" />
+    <Compile Include="Services\OrderItemService.cs" />
     <Compile Include="Services\OrderService.cs" />
     <Compile Include="Controllers\tbl_ProductsController.cs" />
     <Compile Include="Interfaces\IProductService.cs" />
@@ -408,6 +411,7 @@
     <Folder Include="Repositories\" />
     <Folder Include="Validates\" />
     <Folder Include="Views\Default\" />
+    <Folder Include="Views\tbl_OrderItems\" />
     <Folder Include="Views\tbl_Order\" />
     <Folder Include="Views\tbl_Products\" />
     <Folder Include="Views\tbl_Users\" />

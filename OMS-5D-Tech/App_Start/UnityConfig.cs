@@ -21,6 +21,7 @@ namespace OMS_5D_Tech
             container.RegisterType<ICategoryService, CategoryService>();
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IOrderService, OrderService>();
+            container.RegisterType<IOrderItemService, OrderItemService>();
             container.RegisterType<IProductService, ProductService>(new HierarchicalLifetimeManager());
             container.RegisterType<IReportService, ReportService>();
             container.RegisterType<ICartService, CartService>();

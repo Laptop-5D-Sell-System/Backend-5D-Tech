@@ -21,7 +21,7 @@ public class JwtService
                 new Claim(ClaimTypes.Role, role),
                 new Claim("IsVerify", is_verify.ToString()),
             }),
-            Expires = DateTime.UtcNow.AddMinutes(30), // Đang đặt access_token có giá trị trong 30 phút
+            Expires = DateTime.UtcNow.AddHours(2), // Đang đặt access_token có giá trị trong 2 tiếng
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 

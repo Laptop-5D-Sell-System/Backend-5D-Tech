@@ -14,7 +14,7 @@ public static class WebApiConfig
 
         // Cấu hình Web API routes
         config.MapHttpAttributeRoutes();
-
+        config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
         config.Routes.MapHttpRoute(
             name: "DefaultApi",
             routeTemplate: "api/{controller}/{id}",

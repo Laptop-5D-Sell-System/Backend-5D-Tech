@@ -245,7 +245,7 @@ namespace OMS_5D_Tech.Services
                         return new { HttpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy đơn hàng!" };
                     }
 
-                    if (order.status != "Pending")
+                    if (order.status == "Processing")
                     {
                         return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Không thể hủy đơn hàng đã được xử lý!" };
                     }
@@ -462,7 +462,7 @@ namespace OMS_5D_Tech.Services
         }
 
 
-        public async Task<object> GetMyOrders(int? page, int? pageSize)
+        public async Task<object> GetMyOrders(string status,int? page, int? pageSize)
         {
             try
             {
@@ -478,11 +478,11 @@ namespace OMS_5D_Tech.Services
                 }
 
                 var totalOrders = await _dbContext.tbl_Orders
-                    .Where(o => o.user_id == id)
+                    .Where(o => o.user_id == id && o.status == status)
                     .CountAsync(); // Đếm tổng số đơn hàng
 
                 var orders = await _dbContext.tbl_Orders
-                    .Where(o => o.user_id == id)
+                    .Where(o => o.user_id == id && o.status == status)
                     .OrderByDescending(o => o.order_date) // Sắp xếp mới nhất lên đầu
                     .Skip((currentPage - 1) * currentPageSize) // Bỏ qua các đơn hàng trước đó
                     .Take(currentPageSize) // Lấy đúng số lượng cần

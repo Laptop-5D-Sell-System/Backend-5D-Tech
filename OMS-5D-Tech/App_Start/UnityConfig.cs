@@ -25,6 +25,7 @@ namespace OMS_5D_Tech
             container.RegisterType<IProductService, ProductService>(new HierarchicalLifetimeManager());
             container.RegisterType<IReportService, ReportService>();
             container.RegisterType<ICartService, CartService>();
+            container.RegisterType<IVnPayService, VnPayService>();
             DependencyResolver.SetResolver(new UnityDependencyResolver(container));
         }
     }

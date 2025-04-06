@@ -84,8 +84,7 @@ namespace OMS_5D_Tech.Models
                 .IsUnicode(false);
 
             modelBuilder.Entity<tbl_Payments>()
-                .Property(e => e.amount)
-                .HasPrecision(10, 2);
+                .Property(e => e.amount);
 
             modelBuilder.Entity<tbl_Payments>()
                 .Property(e => e.status)

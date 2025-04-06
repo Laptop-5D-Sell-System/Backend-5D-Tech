@@ -4,6 +4,7 @@ using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Services;
 using OMS_5D_Tech.Models;
 using System.Web.Http;
+using System.Web.ModelBinding;
 
 namespace OMS_5D_Tech.Controllers
 {
@@ -49,9 +50,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpGet]
         [Route("my-orders")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> GetMyOrders([FromUri] int? page = 1, [FromUri] int? pageSize = 10)
+        public async Task<IHttpActionResult> GetMyOrders([FromUri] string status , [FromUri] int? page = 1, [FromUri] int? pageSize = 10)
         {
-            var result = await _orderService.GetMyOrders(page, pageSize);
+            var result = await _orderService.GetMyOrders(status ,page, pageSize);
             return Ok(result);
         }
 

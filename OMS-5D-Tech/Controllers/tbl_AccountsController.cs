@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
+using System.Web.ModelBinding;
 using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Models;
@@ -68,9 +70,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("change-password")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> UpdateAccount(tbl_Accounts acc)
+        public async Task<IHttpActionResult> UpdateAccount()
         {
-            var result = await _accountService.UpdateAccountAsync(acc);
+            var result = await _accountService.UpdateAccountAsync(HttpContext.Current.Request);
             return Ok(result);
         }
 
@@ -85,9 +87,9 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("reset-password")]
-        public async Task<IHttpActionResult> ResetPassword(string email)
+        public async Task<IHttpActionResult> ResetPassword([FromBody] AccountDTO acc)
         {
-            var result = await _accountService.ResetPasswordAsync(email);
+            var result = await _accountService.ResetPasswordAsync(acc);
             return Ok(result);
         }
 

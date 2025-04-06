@@ -182,6 +182,8 @@ namespace OMS_5D_Tech.Services
             {
                 var userId = await GetCurrentUserIdAsync();
                 var existingUser = await _dbContext.tbl_Users.FindAsync(userId);
+                var accountId = existingUser.account_id;
+                var accountExisting = await _dbContext.tbl_Accounts.FindAsync(accountId);
 
                 if (existingUser == null)
                 {
@@ -193,6 +195,8 @@ namespace OMS_5D_Tech.Services
                 var dob = request.Form["dob"];
                 var phone_number = request.Form["phone_number"];
                 var address = request.Form["address"];
+                var email = request.Form["email"];
+                var password_hash = request.Form["password_hash"];
 
                 if (!string.IsNullOrEmpty(first_name))
                     existingUser.first_name = first_name;
@@ -208,6 +212,22 @@ namespace OMS_5D_Tech.Services
 
                 if (!string.IsNullOrEmpty(address))
                     existingUser.address = address;
+                
+                if (!string.IsNullOrEmpty(email))
+                {
+                    var check_email = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.email == email);
+                    if (check_email == null)
+                    {
+                        accountExisting.email = email;
+                    }
+                    else
+                    {
+                        return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Email đã được sử dụng !" };
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(password_hash))
+                    accountExisting.password_hash = BCrypt.Net.BCrypt.HashPassword(password_hash);
 
                 if (request.Files.Count > 0)
                 {

@@ -66,6 +66,28 @@ namespace OMS_5D_Tech.Templates
             ";
         }
 
+        public string SendThankYouForPurchaseEmail(string email, string orderId, decimal total)
+        {
+            return $@"
+                <div style='font-family: Arial, sans-serif;'>
+                    <h2 style='color: #0073e6;'>5D-Tech Laptop Shop System</h2>
+                    <p>Xin chào, {email},</p>
+                    <p>Cảm ơn bạn rất nhiều vì đã mua sắm tại 5D-Tech!</p>
+            
+                    <p><strong>Thông tin đơn hàng của bạn:</strong></p>
+                    <ul>
+                        <li><strong>Mã đơn hàng:</strong> {orderId}</li>
+                        <li><strong>Tổng tiền:</strong> {total:N0} VNĐ</li> 
+                    </ul>
+            
+                    <p>Chúng tôi rất vui khi nhận được sự tin tưởng của bạn, và hy vọng bạn sẽ tiếp tục mua sắm với chúng tôi trong tương lai.</p>
+
+                    <p>Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ thêm, đừng ngần ngại liên hệ với chúng tôi.</p>
+            
+                    <p style='margin-top:30px;'>Trân trọng,<br/>5D-Tech Laptop Shop System</p>
+                </div>
+            ";
+        }
 
     }
 }

@@ -1,12 +1,12 @@
-namespace OMS_5D_Tech.Models
-{
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Web;
 
-    public partial class tbl_Payments
+namespace OMS_5D_Tech.DTOs
+{
+    public class PaymentDTO
     {
         public int id { get; set; }
 
@@ -23,6 +23,6 @@ namespace OMS_5D_Tech.Models
         [StringLength(50)]
         public string status { get; set; }
 
-        public virtual tbl_Orders tbl_Orders { get; set; }
+        OrderDTO orderDTO { get; set; }
     }
 }

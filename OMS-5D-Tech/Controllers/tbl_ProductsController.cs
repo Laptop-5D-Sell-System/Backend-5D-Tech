@@ -46,6 +46,14 @@ namespace OMS_5D_Tech.Controllers
             var result = await _productService.GetProductsByCategoryID(id, sortOrder);
             return Ok(result);
         }
+        
+        [HttpGet]
+        [Route("total-product-by-category")]
+        public async Task<IHttpActionResult> getTotalProductByCateogory()
+        {
+            var result = await _productService.GetTotalProductByCateogory();
+            return Ok(result);
+        }
         [HttpPost]
         [Route("create")]
         [CustomAuthorize(Roles = "admin")]

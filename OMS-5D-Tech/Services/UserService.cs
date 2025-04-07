@@ -118,7 +118,8 @@ namespace OMS_5D_Tech.Services
                 {
                     _.id,
                     _.account_id,
-                    full_name = _.first_name + " " + _.last_name,
+                    _.first_name, 
+                    _.last_name,
                     _.phone_number,
                     _.address,
                     _.dob,

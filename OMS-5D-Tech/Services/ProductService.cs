@@ -130,6 +130,30 @@ namespace OMS_5D_Tech.Services
             }
         }
 
+
+        public async Task<object> GetTotalProductByCateogory()
+        {
+            try
+            {
+                var result = await _dbContext.tbl_Products
+                    .Join(_dbContext.tbl_Categories,
+                          p => p.category_id,
+                          c => c.id,
+                          (p, c) => new { CategoryName = c.name })
+                    .GroupBy(x => x.CategoryName)
+                    .Select(g => new
+                    {
+                        Name = g.Key,
+                        Total = g.Count()
+                    })
+                    .ToListAsync();
+
+                return new { HttpStatus = HttpStatusCode.OK, mess = "Lấy danh sách thành công !", result };
+            }catch (Exception ex)
+            {
+                return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
+            }
+        }
         public async Task<object> GetProductDetail(int id)
         {
             try

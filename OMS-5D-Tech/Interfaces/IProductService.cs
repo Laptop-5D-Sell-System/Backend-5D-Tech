@@ -16,5 +16,6 @@ namespace OMS_5D_Tech.Interfaces
         Task<object> CreateProductAsync(HttpRequest request);
         Task<object> UpdateProductAsync(int id , HttpRequest request);
         Task<object> DeleteProductAsync(int id);
+        Task<object> GetTotalProductByCateogory();
     }
 }

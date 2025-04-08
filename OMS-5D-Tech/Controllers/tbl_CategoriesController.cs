@@ -7,6 +7,7 @@ using System.Web.Http;
 using OMS_5D_Tech.Filters;
 using OMS_5D_Tech.Interfaces;
 using OMS_5D_Tech.Models;
+using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Services;
 
 namespace OMS_5D_Tech.Controllers
@@ -25,7 +26,7 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("create")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<IHttpActionResult> CreateCategory([FromBody] tbl_Categories cat)
+        public async Task<IHttpActionResult> CreateCategory([FromBody] CategoryDTO cat)
         {
             var result = await _categoryService.CreateCategoryAsync(cat);
             return Ok(result);
@@ -42,9 +43,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpPost]
         [Route("update")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<IHttpActionResult> UpdateCategory([FromBody] tbl_Categories cat)
+        public async Task<IHttpActionResult> UpdateCategory([FromUri]int id , [FromBody] CategoryDTO cat)
         {
-            var result = await _categoryService.UpdateCategoryAsync(cat);
+            var result = await _categoryService.UpdateCategoryAsync(id , cat);
             return Ok(result);
         }
         [HttpDelete]

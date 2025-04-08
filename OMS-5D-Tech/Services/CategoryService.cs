@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using MimeKit.Tnef;
+using OMS_5D_Tech.DTOs;
 using OMS_5D_Tech.Interfaces;
 using OMS_5D_Tech.Models;
 
@@ -19,7 +20,7 @@ namespace OMS_5D_Tech.Services
         {
             _dbContext = dbContext;
         }
-        public async Task<object> CreateCategoryAsync(tbl_Categories cat)
+        public async Task<object> CreateCategoryAsync(CategoryDTO cat)
         {
             try
             {
@@ -28,7 +29,14 @@ namespace OMS_5D_Tech.Services
                 {
                     return new { httpStatus = HttpStatusCode.BadRequest, mess = "Đã tồn tại thể loại !" };
                 }
-                _dbContext.tbl_Categories.Add(cat);
+
+                var cate = new tbl_Categories
+                {
+                    name = cat.name,
+                    description = cat.description,
+                };
+
+                _dbContext.tbl_Categories.Add(cate);
                 _dbContext.SaveChanges();
                 return new { httpStatus = HttpStatusCode.Created, mess = "Tạo thể loại thành công !" };
 
@@ -44,22 +52,30 @@ namespace OMS_5D_Tech.Services
             try
             {
                 var check = await _dbContext.tbl_Categories.FindAsync(id);
-                if (check==null)
+                if (check == null)
                 {
                     return new { httpStatus = HttpStatusCode.BadRequest, mess = "Không tồn tại thể loại!" };
                 }
-                return new { HttpStatusCode = HttpStatusCode.OK, mess = "Tìm thể loại thành công !", category = check };
-            }catch(Exception ex)
+                var result = new CategoryDTO
+                {
+                    id = id,
+                    name = check.name,
+                    description = check.description,
+                };
+                return new { httpStatus = HttpStatusCode.OK, mess = "Tìm thể loại thành công!", data = result };
+            }
+            catch (Exception ex)
             {
                 return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message };
             }
         }
 
-        public async Task<object> UpdateCategoryAsync(tbl_Categories cat)
+
+        public async Task<object> UpdateCategoryAsync(int id , CategoryDTO cat)
         {
             try
             {
-                var check = await _dbContext.tbl_Categories.FindAsync(cat.id);
+                var check = await _dbContext.tbl_Categories.FindAsync(id);
                 if(check == null)
                 {
                     return new { httpStatus = HttpStatusCode.BadRequest, mess = "Không tìm thấy thể loại !" };
@@ -74,7 +90,13 @@ namespace OMS_5D_Tech.Services
                 if(cat.description != null)
                     check.description = cat.description;
                 await _dbContext.SaveChangesAsync();
-                return new { htppStatus = HttpStatusCode.OK, mess = "Sửa thể loại thành công !", category = check };
+                var result = new CategoryDTO
+                {
+                    id = id,
+                    name = check.name,
+                    description = check.description,
+                };
+                return new { httpStatus = HttpStatusCode.OK, mess = "Sửa thể loại thành công !", category = result };
             }catch(Exception ex)
             {
                 return new { httpStatus = HttpStatusCode.InternalServerError, mess = "Có lỗi xảy ra: " + ex.Message};

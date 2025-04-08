@@ -15,5 +15,7 @@ namespace OMS_5D_Tech.DTOs
         public string name { get; set; }
 
         public string description { get; set; }
+
+        ProductDTO tbl_Products { get; set; }
     }
 }

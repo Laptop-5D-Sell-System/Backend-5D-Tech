@@ -50,7 +50,7 @@ namespace OMS_5D_Tech.Models
 
             modelBuilder.Entity<tbl_Categories>()
                 .Property(e => e.name)
-                .IsUnicode(false);
+                .IsUnicode(true);
 
             modelBuilder.Entity<tbl_Categories>()
                 .HasMany(e => e.tbl_Products)
@@ -92,7 +92,7 @@ namespace OMS_5D_Tech.Models
 
             modelBuilder.Entity<tbl_Products>()
                 .Property(e => e.name)
-                .IsUnicode(false);
+                .IsUnicode(true);
 
             modelBuilder.Entity<tbl_Products>()
                 .Property(e => e.price)
@@ -100,7 +100,7 @@ namespace OMS_5D_Tech.Models
 
             modelBuilder.Entity<tbl_Products>()
                 .Property(e => e.product_image)
-                .IsUnicode(false);
+                .IsUnicode(true);
 
             modelBuilder.Entity<tbl_Products>()
                 .HasMany(e => e.tbl_Cart)
@@ -119,15 +119,15 @@ namespace OMS_5D_Tech.Models
 
             modelBuilder.Entity<tbl_Reports>()
                 .Property(e => e.report_type)
-                .IsUnicode(false);
+                .IsUnicode(true);
 
             modelBuilder.Entity<tbl_Users>()
                 .Property(e => e.first_name)
-                .IsUnicode(false);
+                .IsUnicode(true);
 
             modelBuilder.Entity<tbl_Users>()
                 .Property(e => e.last_name)
-                .IsUnicode(false);
+                .IsUnicode(true);
 
             modelBuilder.Entity<tbl_Users>()
                 .Property(e => e.phone_number)

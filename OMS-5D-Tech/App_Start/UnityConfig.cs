@@ -18,6 +18,7 @@ namespace OMS_5D_Tech
 
             // e.g. container.RegisterType<ITestService, TestService>();
             container.RegisterType<IAccountService, AccountService>();
+            container.RegisterType<IReviewService, ReviewService>();
             container.RegisterType<ICategoryService, CategoryService>();
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IOrderService, OrderService>();

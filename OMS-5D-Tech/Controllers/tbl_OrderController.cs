@@ -50,9 +50,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpGet]
         [Route("my-orders")]
         [CustomAuthorize]
-        public async Task<IHttpActionResult> GetMyOrders([FromUri] string status , [FromUri] int? page = 1, [FromUri] int? pageSize = 10)
+        public async Task<IHttpActionResult> GetMyOrders([FromUri] string status)
         {
-            var result = await _orderService.GetMyOrders(status ,page, pageSize);
+            var result = await _orderService.GetMyOrders(status);
             return Ok(result);
         }
 

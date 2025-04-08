@@ -307,6 +307,8 @@ namespace OMS_5D_Tech.Services
                     o.status,
                     o.total
                 }).FirstOrDefaultAsync();
+                
+                var userInfor = await _dbContext.tbl_Users.FirstOrDefaultAsync(_ => _.id == order.user_id);
 
                 var totalQuantity = await _dbContext.tbl_Order_Items
                     .Where(oi => oi.order_id == id)
@@ -334,6 +336,7 @@ namespace OMS_5D_Tech.Services
                         order.user_id,
                         order.order_date,
                         order.status,
+                        address = userInfor.address,
                         products = productList,
                         total_quantity = totalQuantity,
                         order.total,
@@ -462,20 +465,13 @@ namespace OMS_5D_Tech.Services
         }
 
 
-        public async Task<object> GetMyOrders(string status,int? page, int? pageSize)
+        public async Task<object> GetMyOrders(string status)
         {
             try
             {
                 var id = await GetCurrentUserIdAsync();
                 if(id == null)  return new {HttpStatus = HttpStatusCode.NotFound , mess = "Vui lòng đăng nhập !"};
 
-                int currentPage = page ?? 1; // Mặc định trang đầu tiên
-                int currentPageSize = pageSize ?? 10; // Mặc định lấy 10 đơn hàng
-
-                if (currentPage <= 0 || currentPageSize <= 0)
-                {
-                    return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Page hoặc pageSize không hợp lệ!" };
-                }
 
                 var totalOrders = await _dbContext.tbl_Orders
                     .Where(o => o.user_id == id && o.status == status)
@@ -483,9 +479,7 @@ namespace OMS_5D_Tech.Services
 
                 var orders = await _dbContext.tbl_Orders
                     .Where(o => o.user_id == id && o.status == status)
-                    .OrderByDescending(o => o.order_date) // Sắp xếp mới nhất lên đầu
-                    .Skip((currentPage - 1) * currentPageSize) // Bỏ qua các đơn hàng trước đó
-                    .Take(currentPageSize) // Lấy đúng số lượng cần
+                    .OrderByDescending(o => o.order_date)
                     .Select(o => new
                     {
                         o.id,
@@ -505,9 +499,6 @@ namespace OMS_5D_Tech.Services
                     mess = "Lấy danh sách đơn hàng thành công!",
                     myOrders = orders,
                     totalOrders,
-                    currentPage,
-                    pageSize = currentPageSize,
-                    totalPages = (int)Math.Ceiling((double)totalOrders / currentPageSize),
                 };
             }
             catch (Exception ex)

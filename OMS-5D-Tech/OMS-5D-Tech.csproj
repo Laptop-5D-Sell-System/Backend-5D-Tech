@@ -338,6 +338,7 @@
     <Compile Include="Controllers\tbl_PaymentController.cs" />
     <Compile Include="Controllers\tbl_ReportsController.cs" />
     <Compile Include="Controllers\tbl_OrderController.cs" />
+    <Compile Include="Controllers\tbl_ReviewController.cs" />
     <Compile Include="Controllers\tbl_UsersController.cs" />
     <Compile Include="DTOs\AccountDTO.cs" />
     <Compile Include="DTOs\CartDTO.cs" />
@@ -345,6 +346,7 @@
     <Compile Include="DTOs\LogoutDTO.cs" />
     <Compile Include="DTOs\PaymentDTO.cs" />
     <Compile Include="DTOs\ProductDTO.cs" />
+    <Compile Include="DTOs\ReviewDTO.cs" />
     <Compile Include="DTOs\UserDTO.cs" />
     <Compile Include="Filters\CustomAuthorizeAttribute.cs" />
     <Compile Include="Global.asax.cs">
@@ -359,6 +361,7 @@
     <Compile Include="Interfaces\IOrderItemService.cs" />
     <Compile Include="Interfaces\IOrderService.cs" />
     <Compile Include="Interfaces\IReportService.cs" />
+    <Compile Include="Interfaces\IReviewService.cs" />
     <Compile Include="Interfaces\IVnPayService.cs" />
     <Compile Include="Libraries\VnPayLibrary.cs" />
     <Compile Include="Models\PaymentInformationModel.cs" />
@@ -390,6 +393,7 @@
     <Compile Include="Services\JWTService.cs" />
     <Compile Include="Services\ProductService.cs" />
     <Compile Include="Services\ReportService.cs" />
+    <Compile Include="Services\ReviewService.cs" />
     <Compile Include="Services\UserService.cs" />
     <Compile Include="Services\VnPayService.cs" />
     <Compile Include="Templates\EmailTitle.cs" />

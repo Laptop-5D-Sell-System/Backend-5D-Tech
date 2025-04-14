@@ -245,11 +245,6 @@ namespace OMS_5D_Tech.Services
                         return new { HttpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy đơn hàng!" };
                     }
 
-                    if (order.status == "Processing")
-                    {
-                        return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Không thể hủy đơn hàng đã được xử lý!" };
-                    }
-
                     // Lấy danh sách sản phẩm từ order
                     var productIds = order.tbl_Order_Items.Select(oi => oi.product_id).ToList();
 
@@ -323,9 +318,12 @@ namespace OMS_5D_Tech.Services
                     .Select(oi => new
                     {
                         ProductName = oi.tbl_Products.name,
-                        Quantity = oi.quantity
+                        Quantity = oi.quantity,
+                        Image = oi.tbl_Products.product_image,
+                        Price = oi.tbl_Products.price
                     })
                     .ToList();
+
 
                 return new
                 {
@@ -552,5 +550,186 @@ namespace OMS_5D_Tech.Services
                 return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
             }
         }
+        public async Task<object> CreateOrderByCartAsync(List<CartDTO> cartItems)
+        {
+            using (var transaction = _dbContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    var userId = await GetCurrentUserIdAsync();
+                    if (userId == null)
+                        return new { HttpStatus = HttpStatusCode.Unauthorized, mess = "Vui lòng đăng nhập!" };
+
+                    if (cartItems == null || !cartItems.Any())
+                    {
+                        return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Giỏ hàng trống." };
+                    }
+
+                    var productIds = cartItems.Select(i => i.product_id).ToList();
+
+                    var existingProducts = await _dbContext.tbl_Products
+                        .Where(p => productIds.Contains(p.id))
+                        .ToDictionaryAsync(p => p.id, p => p);
+
+                    // Kiểm tra các sản phẩm không tồn tại trong database
+                    var missingProducts = productIds
+                        .Where(p => !existingProducts.ContainsKey((int)p))
+                        .ToList();
+                    if (missingProducts.Any())
+                    {
+                        return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Sản phẩm ID {string.Join(", ", missingProducts)} không tồn tại." };
+                    }
+
+                    // Kiểm tra số lượng sản phẩm hợp lệ và đủ hàng tồn kho
+                    foreach (var cartItem in cartItems)
+                    {
+                        if (cartItem.quantity <= 0)
+                        {
+                            return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Số lượng sản phẩm ID {cartItem.product_id} không hợp lệ." };
+                        }
+
+                        if (!existingProducts.TryGetValue((int)cartItem.product_id, out var product))
+                        {
+                            return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Không tìm thấy sản phẩm ID {cartItem.product_id}." };
+                        }
+
+                        if (product.stock_quantity < cartItem.quantity)
+                        {
+                            return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Sản phẩm ID {cartItem.product_id} không đủ hàng tồn kho." };
+                        }
+                    }
+
+                    var newOrder = new tbl_Orders
+                    {
+                        user_id = userId,
+                        order_date = DateTime.Now,
+                        status = "Processing", 
+                        total = 0
+                    };
+
+                    _dbContext.tbl_Orders.Add(newOrder);
+                    await _dbContext.SaveChangesAsync();
+
+                    // Danh sách các mục trong đơn hàng và tổng tiền
+                    List<tbl_Order_Items> orderItems = new List<tbl_Order_Items>();
+                    decimal totalAmount = 0;
+
+                    foreach (var cartItem in cartItems)
+                    {
+                        var product = existingProducts[(int)cartItem.product_id];
+                        var price = product.price;
+                        var subtotal = price * cartItem.quantity;
+                        totalAmount += subtotal;
+
+                        // Thêm item vào danh sách orderItems
+                        orderItems.Add(new tbl_Order_Items
+                        {
+                            order_id = newOrder.id,  // ID đơn hàng được tạo khi lưu
+                            product_id = cartItem.product_id,
+                            quantity = cartItem.quantity,
+                            price = price
+                        });
+
+                        // Cập nhật lại số lượng tồn kho sản phẩm
+                        product.stock_quantity -= cartItem.quantity;
+                    }
+
+                    // Cập nhật thông tin email với các sản phẩm trong đơn hàng
+                    var culture = new CultureInfo("vi-VN");
+                    var productInfoFormatted = @"
+                        <table border='1' cellpadding='8' cellspacing='0' style='border-collapse: collapse; width: 100%;'>
+                            <thead style='background-color: #f2f2f2;'>
+                                <tr>
+                                    <th style='text-align:left;'>Tên sản phẩm</th>
+                                    <th style='text-align:right;'>Số lượng</th>
+                                    <th style='text-align:right;'>Đơn giá</th>
+                                    <th style='text-align:right;'>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>";
+
+                                foreach (var item in orderItems)
+                                {
+                                    var product = existingProducts[(int)item.product_id];
+                                    var subtotal = product.price * item.quantity;
+                                    productInfoFormatted += $@"
+                                        <tr>
+                                            <td>{product.name}</td>
+                                            <td style='text-align:right;'>{item.quantity}</td>
+                                            <td style='text-align:right;'>{product.price.ToString("N0", culture)} ₫</td>
+                                            <td style='text-align:right;'>{subtotal.ToString("N0", culture)} ₫</td>
+                                        </tr>";
+                                }
+
+                                productInfoFormatted += @"
+                            </tbody>
+                        </table>";
+
+                    _dbContext.tbl_Order_Items.AddRange(orderItems);
+                    await _dbContext.SaveChangesAsync();
+
+                    newOrder.total = totalAmount;
+                    await _dbContext.SaveChangesAsync();
+
+                    var user = await _dbContext.tbl_Users.FirstOrDefaultAsync(_ => _.id == userId);
+                    var account = await _dbContext.tbl_Accounts.FirstOrDefaultAsync(_ => _.id == user.account_id);
+
+                    var emailService = new EmailService();
+
+                    emailService.SendEmail(
+                        account.email,
+                        "Xác nhận đơn hàng",
+                        _emailTitle.SendVerifyOrderEmail( 
+                            account.email,
+                            newOrder.id.ToString(),
+                            newOrder.order_date.ToString(),
+                            productInfoFormatted,
+                            newOrder.total
+                        )
+                    );
+
+                    transaction.Commit();
+
+                    return new { HttpStatus = HttpStatusCode.Created, mess = "Đơn hàng đã được tạo, vui lòng tiến hành thanh toán", OrderId = newOrder.id };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
+                }
+            }
+        }
+
+        public async Task<object> GetAllOrdersAsync()
+        {
+            var orders = await _dbContext.tbl_Orders
+                .Include(o => o.tbl_Order_Items.Select(oi => oi.tbl_Products))
+                .Select(o => new OrderDTO
+                {
+                    id = o.id,
+                    user_id = o.user_id,
+                    order_date = o.order_date,
+                    status = o.status,
+                    total = o.total,
+                    quantity = o.tbl_Order_Items.Sum(oi => oi.quantity),
+                    OrderItems = o.tbl_Order_Items.Select(oi => new OrderItemDTO
+                    {
+                        id = oi.id,
+                        order_id = oi.order_id,
+                        product_id = oi.product_id,
+                        quantity = oi.quantity,
+                        price = oi.tbl_Products.price
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return new
+            {
+                HttpStatus = 200,
+                mess = "Lấy ra toàn bộ đơn hàng thành công !",
+                orders = orders
+            };
+        }
+
     }
 }

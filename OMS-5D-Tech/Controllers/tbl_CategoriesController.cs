@@ -56,5 +56,13 @@ namespace OMS_5D_Tech.Controllers
             var result = await _categoryService.DeleteCategoryAsync(id);
             return Ok(result);
         }
+
+        [HttpGet]
+        [Route("get-all-categories")]
+        public async Task<IHttpActionResult> getAllCategories()
+        {
+            var result = await _categoryService.getAllCategoriesAsync();
+            return Ok(result);
+        }
     }
 }

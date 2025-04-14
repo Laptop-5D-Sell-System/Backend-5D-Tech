@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Configuration;
+using System.Web.Http;
 
 namespace OMS_5D_Tech.Services
 {
@@ -65,7 +66,7 @@ namespace OMS_5D_Tech.Services
             return vnpay.CreateRequestUrl(vnpUrl, hashSecret);
         }
 
-        public async Task<object> ProcessReturn(NameValueCollection query)
+        public async Task<dynamic> ProcessReturn(NameValueCollection query)
         {
             var hashSecret = ConfigurationManager.AppSettings["vnp_HashSecret"];
             var vnpay = new VnPayLibrary();
@@ -82,30 +83,26 @@ namespace OMS_5D_Tech.Services
 
             if (string.IsNullOrEmpty(orderIdStr) || string.IsNullOrEmpty(responseCode) || string.IsNullOrEmpty(amountStr))
             {
-                return new { HttpStatus = HttpStatusCode.BadRequest, mess = "Thiếu thông tin từ VNPAY" };
+                return new { IsSuccess = false, mess = "Thiếu thông tin từ VNPAY" };
             }
 
             int orderId = int.Parse(orderIdStr);
             decimal amount = decimal.Parse(amountStr) / 100;
 
-            // Kiểm tra đơn hàng có tồn tại chưa
             var order = await _context.tbl_Orders.FindAsync(orderId);
             if (order == null)
             {
-                return new { HttpStatus = HttpStatusCode.BadRequest, mess = $"Đơn hàng #{orderId} không tồn tại." };
+                return new { IsSuccess = false, mess = $"Đơn hàng #{orderId} không tồn tại." };
             }
 
-            // Kiểm tra xem thanh toán đã được ghi nhận chưa
             var existingPayment = await _context.tbl_Payments
                 .FirstOrDefaultAsync(p => p.order_id == orderId && p.payment_method == "VNPAY");
 
             if (existingPayment != null)
             {
-                return new { mess = "Giao dịch đã tồn tại hoặc đã được xử lý" };
+                return new { IsSuccess = true, mess = "Giao dịch đã tồn tại hoặc đã được xử lý" };
             }
 
-
-            // Thêm giao dịch mới
             var payment = new tbl_Payments
             {
                 order_id = orderId,
@@ -115,28 +112,96 @@ namespace OMS_5D_Tech.Services
                 status = responseCode == "00" ? "Success" : "Failed"
             };
 
-            // Update trạng thái cho order
-            if(responseCode == "00")
+            if (responseCode == "00")
             {
                 order.status = "Done";
+
+                var orderedProductIds = await _context.tbl_Order_Items
+                    .Where(oi => oi.order_id == orderId)
+                    .Select(oi => oi.product_id)
+                    .ToListAsync();
+
+                var userId = order.user_id;
+
+                var cartItemsToRemove = await _context.tbl_Cart
+                    .Where(c => c.user_id == userId && orderedProductIds.Contains(c.product_id))
+                    .ToListAsync();
+
+                if (cartItemsToRemove.Any())
+                {
+                    _context.tbl_Cart.RemoveRange(cartItemsToRemove);
+                    await _context.SaveChangesAsync();
+                }
             }
 
             _context.tbl_Payments.Add(payment);
             await _context.SaveChangesAsync();
 
-            var userId = _context.tbl_Orders.Where(_ => _.id == orderId).Select(_ => _.user_id).FirstOrDefault();
-            var user = await _context.tbl_Users.FirstOrDefaultAsync(_ => _.id == userId);
+            var user = await _context.tbl_Users.FirstOrDefaultAsync(_ => _.id == order.user_id);
             var account = await _context.tbl_Accounts.FirstOrDefaultAsync(_ => _.id == user.account_id);
             var email = account.email;
 
-            // Gửi mail thanh toán thành công
             var mail = new EmailService();
-            mail.SendEmail(email , "Thanh toán thành công" , _emailTitle.SendThankYouForPurchaseEmail(email, orderId.ToString(), amount));
+            mail.SendEmail(email, "Thanh toán thành công", _emailTitle.SendThankYouForPurchaseEmail(email, orderId.ToString(), amount));
+
             return new
             {
-                HttpStatus = HttpStatusCode.OK,
-                mess = (responseCode == "00") ? "Thanh toán thành công" : "Thanh toán thất bại"
+                IsSuccess = responseCode == "00",
+                mess = responseCode == "00" ? "Thanh toán thành công" : "Thanh toán thất bại"
             };
+        }
+        public async Task<dynamic> paymentByCOD(int orderId)
+        {
+            var order = await _context.tbl_Orders.FindAsync(orderId);
+            if (order == null)
+            {
+                return new { HttpStatus = HttpStatusCode.NotFound, mess = "Không tìm thấy đơn hàng nào !" };
+            }
+
+            if (order.status == "Done")
+            {
+                return new { 
+                    HttpStaus = HttpStatusCode.BadRequest, 
+                    mess = "Đơn hàng này đã được thanh toán." ,
+                    IsSuccess = true,
+                };
+            }
+
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var payment = new tbl_Payments
+                    {
+                        order_id = orderId,
+                        payment_method = "COD",
+                        payment_date = DateTime.Now,
+                        amount = (float)order.total,
+                        status = "Success"
+                    };
+
+                    _context.tbl_Payments.Add(payment);
+                    order.status = "Done";
+
+                    await _context.SaveChangesAsync();
+                    transaction.Commit();
+
+                    var userId = order.user_id;
+                    var user = await _context.tbl_Users.FirstOrDefaultAsync(_ => _.id == userId);
+                    var account = await _context.tbl_Accounts.FirstOrDefaultAsync(_ => _.id == user.account_id);
+                    var email = account.email;
+
+                    var mailService = new EmailService();
+                    mailService.SendEmail(email, "Xác nhận thanh toán COD thành công", _emailTitle.SendThankYouForPurchaseEmail(email, orderId.ToString(), (decimal)order.total));
+
+                    return new { IsSucessful = true , mess = "Thanh toán thành công" };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return new { IsSucessful = false, mess = "Lỗi " + ex.Message };
+                }
+            }
         }
     }
 }

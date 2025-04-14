@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực Email Thành Công</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        p {
+            color: #555;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+            .btn:hover {
+                background-color: #45a049;
+            }
+
+        .icon {
+            font-size: 50px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <i class="fas fa-envelope icon"></i>
+        <h1>Xác thực thành công!</h1>
+        <p>Cảm ơn bạn đã xác thực địa chỉ email của mình. Bây giờ bạn có thể truy cập vào tài khoản của mình.</p>
+        <a href="https://localhost:3000/auth/login" class="btn">Đăng Nhập Ngay</a>
+    </div>
+</body>
+</html>

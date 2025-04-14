@@ -20,6 +20,21 @@ namespace OMS_5D_Tech.Services
         {
             _dbContext = dbContext;
         }
+
+        public async Task<object> getAllCategoriesAsync()
+        {
+            var result = await _dbContext.tbl_Categories
+                .Select(c => new
+                {
+                    c.id,
+                    c.name,
+                    c.description,
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
         public async Task<object> CreateCategoryAsync(CategoryDTO cat)
         {
             try

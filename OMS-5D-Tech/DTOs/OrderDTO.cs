@@ -11,7 +11,6 @@ namespace OMS_5D_Tech.DTOs
         public int id { get; set; }
 
         public int? user_id { get; set; }
-        public int? product_id { get; set; }
         public int? quantity { get; set; }
 
         public DateTime? order_date { get; set; }

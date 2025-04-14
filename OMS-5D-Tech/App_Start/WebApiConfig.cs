@@ -11,7 +11,7 @@ public static class WebApiConfig
         // Cấu hình CORS cho toàn bộ API
         var cors = new EnableCorsAttribute("*", "*", "*");
         config.EnableCors(cors);
-
+        config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
         // Cấu hình Web API routes
         config.MapHttpAttributeRoutes();
         config.Formatters.XmlFormatter.SupportedMediaTypes.Clear();

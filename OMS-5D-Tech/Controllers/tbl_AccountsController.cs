@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -98,11 +99,15 @@ namespace OMS_5D_Tech.Controllers
         public async Task<IHttpActionResult> VerifyEmail(string email)
         {
             var result = await _accountService.VerifyEmailAsync(email);
-            if (result)
-            {
-                return Ok(new { message = "Kích hoạt tài khoản thành công !" });
-            }
-            return Ok(new { message = "Kích hoạt tài khoản thất bại !" });
+
+            var relativeUrl = result
+                ? "/Notification/VerifySuccess"
+                : "/Notification/VerifyFailed";
+
+            var request = Request;
+            var uriBuilder = new UriBuilder(request.RequestUri.Scheme, request.RequestUri.Host, request.RequestUri.Port, relativeUrl);
+
+            return Redirect(uriBuilder.Uri.ToString());
         }
 
         [HttpPost]

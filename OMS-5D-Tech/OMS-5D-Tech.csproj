@@ -330,6 +330,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
+    <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\tbl_AccountsController.cs" />
     <Compile Include="Controllers\tbl_CartController.cs" />
     <Compile Include="Controllers\tbl_CategoriesController.cs" />
@@ -403,6 +404,11 @@
     <Content Include="Views\tbl_Accounts\Details.cshtml" />
     <Content Include="Views\tbl_Accounts\Edit.cshtml" />
     <Content Include="Views\tbl_Accounts\Index.cshtml" />
+    <None Include="Properties\PublishProfiles\oms-5D-Tech - Web Deploy.pubxml" />
+    <Content Include="Views\Notification\VerifySuccess.cshtml" />
+    <Content Include="Views\Notification\VerifyFailed.cshtml" />
+    <Content Include="Views\Notification\PaymentSuccess.cshtml" />
+    <Content Include="Views\Notification\PaymentFailed.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

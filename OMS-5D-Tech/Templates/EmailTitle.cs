@@ -31,7 +31,7 @@ namespace OMS_5D_Tech.Templates
                             <p>Chúng tôi biết ơn bạn rất nhiều khi đã trở thành thành viên của hệ thống chúng tôi</p>
                             <p>Chúng tôi đã nhận thấy tài khoản của bạn đã đăng ký trong hệ thống của chúng tôi</p>
                             <p>Thời gian xác thực tài khoản chỉ có <b>3</b> phút</p>
-                            <p>Để kích hoạt tài khoản của bạn , vui lòng nhấn vào nút để kích hoạt <a href='https://localhost:44303/auth/verify-email/?email={email}'>Kích hoạt tài khoản</a> để kích hoạt tài khoản</p>
+                            <p>Để kích hoạt tài khoản của bạn , vui lòng nhấn vào nút để kích hoạt <a href='https://oms-5d-tech.azurewebsites.net/auth/verify-email/?email={email}'>Kích hoạt tài khoản</a> để kích hoạt tài khoản</p>
                             <p>Nếu không phải bạn đăng sử dụng thì có thể bỏ qua tin nhắn này !</p>
                             <br>
                             <p>Trân trọng,</p>

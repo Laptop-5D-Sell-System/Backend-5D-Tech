@@ -5,6 +5,7 @@ using OMS_5D_Tech.Services;
 using OMS_5D_Tech.Models;
 using System.Web.Http;
 using System.Web.ModelBinding;
+using System.Collections.Generic;
 
 namespace OMS_5D_Tech.Controllers
 {
@@ -16,8 +17,17 @@ namespace OMS_5D_Tech.Controllers
 
         public tbl_OrderController()
         {
-            _dbContext = new DBContext();   
+            _dbContext = new DBContext();
             _orderService = new OrderService(_dbContext);
+        }
+
+        [HttpGet]
+        [Route("orders")]
+        [CustomAuthorize(Roles = "admin")]
+        public async Task<IHttpActionResult> getAllOrder()
+        {
+            var result = await _orderService.GetAllOrdersAsync();
+            return Ok(result);
         }
 
         [HttpPost]
@@ -36,7 +46,7 @@ namespace OMS_5D_Tech.Controllers
             var result = await _orderService.FindOrderByIdAsync(id);
             return Ok(result);
         }
-        
+
         [HttpPost]
         [Route("cancel")]
         [CustomAuthorize]
@@ -67,19 +77,28 @@ namespace OMS_5D_Tech.Controllers
 
         [HttpPost]
         [Route("update")]
-        [CustomAuthorize(Roles ="admin")]
-        public async Task<IHttpActionResult> UpdateOrder([FromUri]int id, [FromBody]OrderDTO od)
+        [CustomAuthorize(Roles = "admin")]
+        public async Task<IHttpActionResult> UpdateOrder([FromUri] int id, [FromBody] OrderDTO od)
         {
-            var result = await _orderService.UpdateOrderAsync(id , od);
+            var result = await _orderService.UpdateOrderAsync(id, od);
             return Ok(result);
         }
-        
+
         [HttpGet]
         [Route("statistics")]
-        [CustomAuthorize(Roles ="admin")]
+        [CustomAuthorize(Roles = "admin")]
         public async Task<IHttpActionResult> Statistics([FromUri] string status, [FromUri] string condition)
         {
-            var result = await _orderService.Statistics(status , condition);
+            var result = await _orderService.Statistics(status, condition);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("order-by-cart")]
+        [CustomAuthorize]
+        public async Task<IHttpActionResult> OrderByCart(List<CartDTO> cat)
+        {
+            var result = await _orderService.CreateOrderByCartAsync(cat);
             return Ok(result);
         }
     }

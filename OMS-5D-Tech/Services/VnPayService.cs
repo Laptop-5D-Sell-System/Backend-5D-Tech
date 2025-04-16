@@ -194,12 +194,12 @@ namespace OMS_5D_Tech.Services
                     var mailService = new EmailService();
                     mailService.SendEmail(email, "Xác nhận thanh toán COD thành công", _emailTitle.SendThankYouForPurchaseEmail(email, orderId.ToString(), (decimal)order.total));
 
-                    return new { IsSucessful = true , mess = "Thanh toán thành công" };
+                    return new { IsSuccess = true , mess = "Thanh toán thành công" };
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    return new { IsSucessful = false, mess = "Lỗi " + ex.Message };
+                    return new { IsSuccess = false, mess = "Lỗi " + ex.Message };
                 }
             }
         }

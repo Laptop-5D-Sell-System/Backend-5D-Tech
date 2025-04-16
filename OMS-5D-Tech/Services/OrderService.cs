@@ -67,9 +67,9 @@ namespace OMS_5D_Tech.Services
 
                     // Kiểm tra các sản phẩm không tồn tại trong database
                     var missingProducts = productIds
-                        .Where(p => p.HasValue)             
-                        .Select(p => p.Value)                  
-                        .Except(existingProducts.Keys)         
+                        .Where(p => p.HasValue)
+                        .Select(p => p.Value)
+                        .Except(existingProducts.Keys)
                         .ToList();
                     if (missingProducts.Any())
                     {
@@ -142,20 +142,20 @@ namespace OMS_5D_Tech.Services
                             </thead>
                             <tbody>";
 
-                            foreach (var item in orderItems)
-                            {
-                                var product = existingProducts[item.product_id ?? 0];
-                                var subtotal = product.price * item.quantity;
-                                productInfoFormatted += $@"
+                    foreach (var item in orderItems)
+                    {
+                        var product = existingProducts[item.product_id ?? 0];
+                        var subtotal = product.price * item.quantity;
+                        productInfoFormatted += $@"
                                     <tr>
                                         <td>{product.name}</td>
                                         <td style='text-align:right;'>{item.quantity}</td>
                                         <td style='text-align:right;'>{product.price.ToString("N0", culture)} ₫</td>
                                         <td style='text-align:right;'>{subtotal.ToString("N0", culture)} ₫</td>
                                     </tr>";
-                            }
+                    }
 
-                            productInfoFormatted += @"
+                    productInfoFormatted += @"
                             </tbody>
                         </table>";
 
@@ -302,7 +302,7 @@ namespace OMS_5D_Tech.Services
                     o.status,
                     o.total
                 }).FirstOrDefaultAsync();
-                
+
                 var userInfor = await _dbContext.tbl_Users.FirstOrDefaultAsync(_ => _.id == order.user_id);
 
                 var totalQuantity = await _dbContext.tbl_Order_Items
@@ -468,7 +468,7 @@ namespace OMS_5D_Tech.Services
             try
             {
                 var id = await GetCurrentUserIdAsync();
-                if(id == null)  return new {HttpStatus = HttpStatusCode.NotFound , mess = "Vui lòng đăng nhập !"};
+                if (id == null) return new { HttpStatus = HttpStatusCode.NotFound, mess = "Vui lòng đăng nhập !" };
 
 
                 var totalOrders = await _dbContext.tbl_Orders
@@ -539,7 +539,7 @@ namespace OMS_5D_Tech.Services
                                                     _.order_date.Value.Day == DateTime.Now.Day);
                         break;
                 }
-                
+
 
                 var result = await query.Select(_ => new { _.total }).ToListAsync();
 
@@ -603,7 +603,7 @@ namespace OMS_5D_Tech.Services
                     {
                         user_id = userId,
                         order_date = DateTime.Now,
-                        status = "Processing", 
+                        status = "Processing",
                         total = 0
                     };
 
@@ -648,20 +648,20 @@ namespace OMS_5D_Tech.Services
                             </thead>
                             <tbody>";
 
-                                foreach (var item in orderItems)
-                                {
-                                    var product = existingProducts[(int)item.product_id];
-                                    var subtotal = product.price * item.quantity;
-                                    productInfoFormatted += $@"
+                    foreach (var item in orderItems)
+                    {
+                        var product = existingProducts[(int)item.product_id];
+                        var subtotal = product.price * item.quantity;
+                        productInfoFormatted += $@"
                                         <tr>
                                             <td>{product.name}</td>
                                             <td style='text-align:right;'>{item.quantity}</td>
                                             <td style='text-align:right;'>{product.price.ToString("N0", culture)} ₫</td>
                                             <td style='text-align:right;'>{subtotal.ToString("N0", culture)} ₫</td>
                                         </tr>";
-                                }
+                    }
 
-                                productInfoFormatted += @"
+                    productInfoFormatted += @"
                             </tbody>
                         </table>";
 
@@ -679,7 +679,7 @@ namespace OMS_5D_Tech.Services
                     emailService.SendEmail(
                         account.email,
                         "Xác nhận đơn hàng",
-                        _emailTitle.SendVerifyOrderEmail( 
+                        _emailTitle.SendVerifyOrderEmail(
                             account.email,
                             newOrder.id.ToString(),
                             newOrder.order_date.ToString(),

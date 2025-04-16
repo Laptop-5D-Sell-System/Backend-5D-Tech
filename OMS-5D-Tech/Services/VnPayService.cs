@@ -150,7 +150,7 @@ namespace OMS_5D_Tech.Services
                 mess = responseCode == "00" ? "Thanh toán thành công" : "Thanh toán thất bại"
             };
         }
-        public async Task<dynamic> paymentByCOD(int orderId)
+        public async Task<object> paymentByCOD(int orderId)
         {
             var order = await _context.tbl_Orders.FindAsync(orderId);
             if (order == null)
@@ -194,12 +194,12 @@ namespace OMS_5D_Tech.Services
                     var mailService = new EmailService();
                     mailService.SendEmail(email, "Xác nhận thanh toán COD thành công", _emailTitle.SendThankYouForPurchaseEmail(email, orderId.ToString(), (decimal)order.total));
 
-                    return new { IsSuccess = true , mess = "Thanh toán thành công" };
+                    return new { HttpStatus = HttpStatusCode.OK , mess = "Thanh toán thành công" };
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    return new { IsSuccess = false, mess = "Lỗi " + ex.Message };
+                    return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi " + ex.Message };
                 }
             }
         }

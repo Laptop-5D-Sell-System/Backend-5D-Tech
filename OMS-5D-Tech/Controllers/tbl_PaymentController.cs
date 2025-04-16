@@ -56,16 +56,8 @@ namespace OMS_5D_Tech.Controllers
         [Route("payment-by-COD")]
         public async Task<IHttpActionResult> PaymentCOD(int orderId)
         {
-            var result = await _vpnPayService.paymentByCOD(orderId);
-
-            var relativeUrl = result.IsSuccess
-                ? "/Notification/PaymentSuccess"
-                : "/Notification/PaymentFailed";
-
-            var request = Request;
-            var uriBuilder = new UriBuilder(request.RequestUri.Scheme, request.RequestUri.Host, request.RequestUri.Port, relativeUrl);
-
-            return Redirect(uriBuilder.Uri.ToString());
+            var result = await _vpnPayService.paymentByCOD(orderId);          
+            return Ok(result);
         }
     }
 }

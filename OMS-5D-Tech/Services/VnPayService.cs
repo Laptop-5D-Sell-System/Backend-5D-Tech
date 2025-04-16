@@ -194,7 +194,22 @@ namespace OMS_5D_Tech.Services
                     var mailService = new EmailService();
                     mailService.SendEmail(email, "Xác nhận thanh toán COD thành công", _emailTitle.SendThankYouForPurchaseEmail(email, orderId.ToString(), (decimal)order.total));
 
+                    var orderedProductIds = await _context.tbl_Order_Items
+                    .Where(oi => oi.order_id == orderId)
+                    .Select(oi => oi.product_id)
+                    .ToListAsync();
+
+                    var cartItemsToRemove = await _context.tbl_Cart
+                        .Where(c => c.user_id == userId && orderedProductIds.Contains(c.product_id))
+                        .ToListAsync();
+
+                    if (cartItemsToRemove.Any())
+                    {
+                        _context.tbl_Cart.RemoveRange(cartItemsToRemove);
+                        await _context.SaveChangesAsync();
+                    }
                     return new { HttpStatus = HttpStatusCode.OK , mess = "Thanh toán thành công" };
+
                 }
                 catch (Exception ex)
                 {

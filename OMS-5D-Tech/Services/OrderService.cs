@@ -505,49 +505,152 @@ namespace OMS_5D_Tech.Services
             }
         }
 
-        public async Task<object> Statistics(string status, string condition)
+        public async Task<object> Statistics(string status, string condition, DateTime? fromDate, DateTime? toDate)
         {
             try
             {
-                var query = _dbContext.tbl_Orders.Where(_ => _.status == status);
-
+                var now = DateTime.Now;
                 condition = string.IsNullOrEmpty(condition) ? "day" : condition.ToLower();
 
-                switch (condition.ToLower())
+                var query = _dbContext.tbl_Orders.AsQueryable();
+                var totalOrders = await query.CountAsync();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(_ => _.status == status);
+                }
+
+                // Áp dụng khoảng thời gian nếu có fromDate và toDate
+                if (fromDate.HasValue && toDate.HasValue)
+                {
+                    var from = fromDate.Value.Date;
+                    var to = toDate.Value.Date.AddDays(1).AddTicks(-1); // end of day
+                    query = query.Where(_ => _.order_date.HasValue &&
+                                             _.order_date.Value >= from &&
+                                             _.order_date.Value <= to);
+                }
+                
+
+                object result;
+
+                switch (condition)
                 {
                     case "day":
-                        query = query.Where(_ => _.order_date.HasValue &&
-                                                    _.order_date.Value.Year == DateTime.Now.Year &&
-                                                    _.order_date.Value.Month == DateTime.Now.Month &&
-                                                    _.order_date.Value.Day == DateTime.Now.Day);
+                        // Tổng doanh thu trong ngày hoặc trong khoảng
+                        var totalDay = await query
+                            .Where(_ => _.order_date.HasValue &&
+                                (!fromDate.HasValue && !toDate.HasValue
+                                    ? _.order_date.Value.Day == now.Day
+                                    : true))
+                            .SumAsync(_ => (double?)_.total) ?? 0.0;
+                        var orderCountDay = await query.CountAsync();
+                        var percentDay = totalOrders == 0 ? 0 : Math.Round(orderCountDay * 100.0 / totalOrders, 2);
+                        result = new
+                        {
+                            HttpStatus = HttpStatusCode.OK,
+                            mess = "Lấy thống kê theo " + condition + " thành công!",
+                            total = totalDay,
+                            totalOrders = orderCountDay,
+                            percent = percentDay
+                        };
                         break;
 
                     case "month":
-                        query = query.Where(_ => _.order_date.HasValue &&
-                                                    _.order_date.Value.Year == DateTime.Now.Year &&
-                                                    _.order_date.Value.Month == DateTime.Now.Month);
+                        // Doanh thu theo từng ngày trong tháng
+                        var month = fromDate?.Month ?? now.Month;
+                        var monthTo = toDate?.Month ?? now.Month;
+                        var year = fromDate?.Year ?? now.Year;
+
+                        var rawMonthData = await query
+                            .Where(_ => _.order_date.HasValue &&
+                                        _.order_date.Value.Month >= month &&
+                                        _.order_date.Value.Month <= monthTo &&
+                                        _.order_date.Value.Year == year)
+                            .GroupBy(_ => new
+                            {
+                                y = _.order_date.Value.Year,
+                                m = _.order_date.Value.Month,
+                                d = _.order_date.Value.Day
+                            })
+                            .Select(g => new
+                            {
+                                Year = g.Key.y,
+                                Month = g.Key.m,
+                                Day = g.Key.d,
+                                revenue = g.Sum(x => (double?)x.total) ?? 0.0
+                            })
+                            .ToListAsync();
+
+                        var monthData = rawMonthData.Select(x => new
+                        {
+                            date = new DateTime(x.Year, x.Month, x.Day).ToString("yyyy-MM-dd"),
+                            revenue = x.revenue
+                        }).OrderBy(x => x.date)
+                        .ToList();
+                        var orderCountMonth = await query.CountAsync();
+                        var percentMonth = totalOrders == 0 ? 0 : Math.Round(orderCountMonth * 100.0 / totalOrders, 2);
+                        result = new
+                        {
+                            HttpStatus = HttpStatusCode.OK,
+                            mess = "Lấy thống kê theo " + condition + " thành công!",
+                            data = monthData,
+                            totalOrders = orderCountMonth,
+                            percent = percentMonth
+                        };
                         break;
 
                     case "year":
-                        query = query.Where(_ => _.order_date.HasValue &&
-                                                    _.order_date.Value.Year == DateTime.Now.Year);
+                        // Doanh thu theo từng tháng trong năm
+                        var selectedYear = fromDate?.Year ?? now.Year;
+
+                        var rawYearData = await query
+                            .Where(_ => _.order_date.HasValue &&
+                                        _.order_date.Value.Year == selectedYear)
+                            .GroupBy(_ => new { _.order_date.Value.Year, _.order_date.Value.Month })
+                            .Select(g => new
+                            {
+                                year = g.Key.Year,
+                                month = g.Key.Month,
+                                revenue = g.Sum(x => (double?)x.total) ?? 0.0
+                            })
+                            .OrderBy(x => x.year).ThenBy(x => x.month)
+                            .ToListAsync();
+
+                        var yearData = rawYearData.Select(x => new
+                        {
+                            date = new DateTime(x.year, x.month, 1).ToString("yyyy-MM"),
+                            revenue = x.revenue
+                        }).ToList();
+                        var orderCountYear = await query.CountAsync();
+                        var percentYear = totalOrders == 0 ? 0 : Math.Round(orderCountYear * 100.0 / totalOrders, 2);
+                        result = new
+                        {
+                            HttpStatus = HttpStatusCode.OK,
+                            mess = "Lấy thống kê theo " + condition + " thành công!",
+                            data = yearData,
+                            totalOrders = orderCountYear,
+                            percent = percentYear
+                        };
                         break;
+
                     default:
-                        query = query.Where(_ => _.order_date.HasValue &&
-                                                    _.order_date.Value.Year == DateTime.Now.Year &&
-                                                    _.order_date.Value.Month == DateTime.Now.Month &&
-                                                    _.order_date.Value.Day == DateTime.Now.Day);
+                        result = new
+                        {
+                            HttpStatus = HttpStatusCode.BadRequest,
+                            mess = "Giá trị condition không hợp lệ"
+                        };
                         break;
                 }
 
-
-                var result = await query.Select(_ => new { _.total }).ToListAsync();
-
-                return new { HttpStatus = HttpStatusCode.OK, data = result };
+                return result;
             }
             catch (Exception ex)
             {
-                return new { HttpStatus = HttpStatusCode.InternalServerError, mess = "Lỗi xảy ra: " + ex.Message };
+                return new
+                {
+                    HttpStatus = HttpStatusCode.InternalServerError,                  
+                    mess = "Lỗi xảy ra: " + ex.Message
+                };
             }
         }
         public async Task<object> CreateOrderByCartAsync(List<CartDTO> cartItems)

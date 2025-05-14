@@ -35,7 +35,7 @@ namespace OMS_5D_Tech.Services
 
                 var checkCat = await _dbContext.tbl_Categories.FindAsync(categoryId);
                 if (checkCat == null)
-                    categoryId = null;
+                    return new { httpStatus = HttpStatusCode.BadRequest, mess = "Danh mục không tồn tại!" };
 
                 var check = await _dbContext.tbl_Products.FirstOrDefaultAsync(p => p.name == name);
                 if (check != null)
@@ -50,7 +50,7 @@ namespace OMS_5D_Tech.Services
                         imageUrl = _cloudinaryService.UploadImage(imageFile);
                     }
                 }
-
+                
                 var product = new tbl_Products
                 {
                     name = name,

@@ -6,6 +6,7 @@ using OMS_5D_Tech.Models;
 using System.Web.Http;
 using System.Web.ModelBinding;
 using System.Collections.Generic;
+using System;
 
 namespace OMS_5D_Tech.Controllers
 {
@@ -87,9 +88,9 @@ namespace OMS_5D_Tech.Controllers
         [HttpGet]
         [Route("statistics")]
         [CustomAuthorize(Roles = "admin")]
-        public async Task<IHttpActionResult> Statistics([FromUri] string status, [FromUri] string condition)
+        public async Task<IHttpActionResult> Statistics([FromUri] string status, [FromUri] string condition , [FromUri] DateTime? fromDate, [FromUri] DateTime? toDate)
         {
-            var result = await _orderService.Statistics(status, condition);
+            var result = await _orderService.Statistics(status, condition , fromDate, toDate);
             return Ok(result);
         }
 

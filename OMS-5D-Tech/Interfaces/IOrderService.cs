@@ -16,6 +16,6 @@ namespace OMS_5D_Tech.Interfaces
         Task<object> GetMyOrders(string status);
         Task<object> UpdateOrderAsync(int id , OrderDTO od);
         Task<object> DeleteOrderAsync(int id);
-        Task<object> Statistics(string status , string condition);
+        Task<object> Statistics(string status , string condition , DateTime? from , DateTime? to);
     }
 }
